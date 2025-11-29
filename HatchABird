@@ -1,0 +1,162 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Window = Rayfield:CreateWindow({
+   Name = "duminik.gg",
+   Icon = 0,
+   LoadingTitle = "duminik.gg",
+   LoadingSubtitle = "by duminik",
+   ShowText = "duminik.gg",
+   Theme = "Default",
+   ToggleUIKeybind = "K",
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false,
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil,
+      FileName = "duminik.gg"
+   },
+   Discord = {
+      Enabled = false,
+      Invite = "noinvitelink",
+      RememberJoins = true
+   },
+   KeySystem = true,
+   KeySettings = {
+      Title = "duminik.gg",
+      Subtitle = "Key System",
+      Note = "The Key is HanniPhamMyLove",
+      FileName = "duminik.gg",
+      SaveKey = true,
+      GrabKeyFromSite = false,
+      Key = {"HanniPhamMyLove"}
+   }
+})
+
+local Tab = Window:CreateTab("EGGS", 4483362458)
+local Section = Tab:CreateSection("Egg Types")
+
+-- Variables for egg looping
+local eggLoops = {}
+local delayBetweenCalls = 0.1 -- Adjust this value as needed (in seconds)
+
+-- List of all eggs you want to add
+local eggList = {
+   "BasicEgg",
+   "GrainEgg", 
+   "WoodlandEgg",
+   "PondEgg",
+   "ForestEgg",
+   "LavaEgg",
+   "WildEgg"
+}
+
+-- Function to create egg toggle
+local function createEggToggle(eggName)
+   eggLoops[eggName] = false
+   
+   return Tab:CreateToggle({
+      Name = "Auto Buy " .. eggName,
+      CurrentValue = false,
+      Flag = "Auto" .. eggName,
+      Callback = function(Value)
+         eggLoops[eggName] = Value
+         
+         if Value then
+            -- Start the loop for this specific egg
+            spawn(function()
+               while eggLoops[eggName] do
+                  local args = { eggName }
+                  game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("EggEvent"):FireServer(unpack(args))
+                  wait(delayBetweenCalls)
+               end
+            end)
+         end
+         -- No need to manually stop the loop since it checks eggLoops[eggName] each iteration
+      end,
+   })
+end
+
+-- Create toggles for all eggs
+for _, eggName in pairs(eggList) do
+   createEggToggle(eggName)
+end
+
+-- Create FOODS Tab
+local FoodsTab = Window:CreateTab("FOODS", 4483362458)
+local FoodsSection = FoodsTab:CreateSection("Food Items")
+
+-- Variables for food looping
+local foodLoops = {}
+local foodDelayBetweenCalls = 0.1 -- Adjust this value as needed (in seconds)
+
+-- List of all foods you want to add
+local foodList = {
+   "Worm",
+   "BirdFeed", 
+   "Bread",
+   "Fish",
+   "MagicBerry"
+}
+
+-- Function to create food toggle
+local function createFoodToggle(foodName)
+   foodLoops[foodName] = false
+   
+   return FoodsTab:CreateToggle({
+      Name = "Auto Buy " .. foodName,
+      CurrentValue = false,
+      Flag = "Auto" .. foodName,
+      Callback = function(Value)
+         foodLoops[foodName] = Value
+         
+         if Value then
+            -- Start the loop for this specific food
+            spawn(function()
+               while foodLoops[foodName] do
+                  local args = { foodName }
+                  game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("EggEvent"):FireServer(unpack(args))
+                  wait(foodDelayBetweenCalls)
+               end
+            end)
+         end
+         -- No need to manually stop the loop since it checks foodLoops[foodName] each iteration
+      end,
+   })
+end
+
+-- Create toggles for all foods
+for _, foodName in pairs(foodList) do
+   createFoodToggle(foodName)
+end
+
+-- Create GEARS Tab (empty)
+local GearsTab = Window:CreateTab("Gears", 4483362458)
+local GearsSection = GearsTab:CreateSection("Gears")
+
+-- Add note to Gears tab
+local GearsNote = GearsTab:CreateLabel("No Content Available")
+local GearsMessage = GearsTab:CreateLabel("because the owner is sucks")
+
+-- Create SELL Tab
+local SellTab = Window:CreateTab("Sell", 4483362458)
+local SellSection = SellTab:CreateSection("Sell Items")
+
+-- Add Sell All button to Sell tab
+local SellAllButton = SellTab:CreateButton({
+   Name = "Sell All",
+   Callback = function()
+      local args = {"SellAll"}
+      game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("sellEvent"):FireServer(unpack(args))
+   end,
+})
+
+-- Create AUTO UPGRADE Tab
+local AutoUpgradeTab = Window:CreateTab("Auto Upgrade", 4483362458)
+local AutoUpgradeSection = AutoUpgradeTab:CreateSection("Auto Upgrade")
+
+-- Add Auto Upgrade button
+local AutoUpgradeButton = AutoUpgradeTab:CreateButton({
+   Name = "Auto Upgrade",
+   Callback = function()
+      game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Upgrade"):FireServer()
+   end,
+})
