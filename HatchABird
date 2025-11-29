@@ -15,9 +15,9 @@ local Window = Rayfield:CreateWindow({
       FileName = "duminik.gg"
    },
    Discord = {
-      Enabled = false,
+      Enabled = true,
       Invite = "https://discord.gg/ZRZ6N5Ef8",
-      RememberJoins = true
+      RememberJoins = false
    },
    KeySystem = true,
    KeySettings = {
