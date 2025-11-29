@@ -151,7 +151,7 @@ Instance.new("UICorner", InputFrame)
 local PlayerTextBox = Instance.new("TextBox")
 PlayerTextBox.Size = UDim2.new(1,0,1,0)
 PlayerTextBox.BackgroundTransparency = 1
-PlayerTextBox.PlaceholderText = "player name(s)"
+PlayerTextBox.PlaceholderText = "enter player username"
 PlayerTextBox.Text = ""
 PlayerTextBox.Font = Enum.Font.Gotham
 PlayerTextBox.TextSize = 14
