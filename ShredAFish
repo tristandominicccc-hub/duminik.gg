@@ -3,10 +3,7 @@ local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
----------------------------------------------------------------------
--- KEY SYSTEM SETTINGS
----------------------------------------------------------------------
-local CorrectKey = "SAF-DUMINIK.GG" -- CHANGE YOUR KEY HERE
+local CorrectKey = "SAF-DUMINIK.GG"
 local KeyLink = "https://linkvertise.com/1452085/CM2Wj9Mehwfc?o=sharing"
 
 ---------------------------------------------------------------------
