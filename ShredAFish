@@ -3,24 +3,135 @@ local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
--- Create ScreenGui
+---------------------------------------------------------------------
+-- KEY SYSTEM SETTINGS
+---------------------------------------------------------------------
+local CorrectKey = "SAF-DUMINIK.GG" -- CHANGE YOUR KEY HERE
+local KeyLink = "https://linkvertise.com/1452085/CM2Wj9Mehwfc?o=sharing"
+
+---------------------------------------------------------------------
+-- MAIN GUI HOLDER
+---------------------------------------------------------------------
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "PlayerSlapperGUI"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- MainFrame (small)
+---------------------------------------------------------------------
+-- KEY SYSTEM GUI
+---------------------------------------------------------------------
+local KeyFrame = Instance.new("Frame")
+KeyFrame.Size = UDim2.new(0, 250, 0, 180)
+KeyFrame.Position = UDim2.new(0.5, -125, 0.25, 0)
+KeyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+KeyFrame.BorderSizePixel = 0
+KeyFrame.Parent = ScreenGui
+Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 10)
+
+local KeyTitle = Instance.new("TextLabel")
+KeyTitle.Size = UDim2.new(1, 0, 0, 40)
+KeyTitle.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+KeyTitle.Text = "🔑 Key System"
+KeyTitle.TextColor3 = Color3.new(1,1,1)
+KeyTitle.Font = Enum.Font.GothamBold
+KeyTitle.TextSize = 16
+KeyTitle.Parent = KeyFrame
+Instance.new("UICorner", KeyTitle)
+
+local KeyBoxFrame = Instance.new("Frame")
+KeyBoxFrame.Size = UDim2.new(0.9, 0, 0, 35)
+KeyBoxFrame.Position = UDim2.new(0.05, 0, 0.28, 0)
+KeyBoxFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+KeyBoxFrame.BorderSizePixel = 0
+KeyBoxFrame.Parent = KeyFrame
+Instance.new("UICorner", KeyBoxFrame)
+
+local KeyBox = Instance.new("TextBox")
+KeyBox.Size = UDim2.new(1, 0, 1, 0)
+KeyBox.BackgroundTransparency = 1
+KeyBox.PlaceholderText = "Enter key"
+KeyBox.Text = ""
+KeyBox.Font = Enum.Font.Gotham
+KeyBox.TextSize = 14
+KeyBox.TextColor3 = Color3.new(1,1,1)
+KeyBox.Parent = KeyBoxFrame
+
+local VerifyKeyBtn = Instance.new("TextButton")
+VerifyKeyBtn.Size = UDim2.new(0.9,0,0,40)
+VerifyKeyBtn.Position = UDim2.new(0.05,0,0.60,0)
+VerifyKeyBtn.BackgroundColor3 = Color3.fromRGB(0,170,0)
+VerifyKeyBtn.Text = "✔ VERIFY"
+VerifyKeyBtn.Font = Enum.Font.GothamBold
+VerifyKeyBtn.TextSize = 15
+VerifyKeyBtn.TextColor3 = Color3.new(1,1,1)
+VerifyKeyBtn.Parent = KeyFrame
+Instance.new("UICorner", VerifyKeyBtn)
+
+local GetLinkBtn = Instance.new("TextButton")
+GetLinkBtn.Size = UDim2.new(0.9,0,0,35)
+GetLinkBtn.Position = UDim2.new(0.05,0,0.82,0)
+GetLinkBtn.BackgroundColor3 = Color3.fromRGB(0,90,255)
+GetLinkBtn.Text = "🔗 GET LINK"
+GetLinkBtn.Font = Enum.Font.GothamBold
+GetLinkBtn.TextSize = 14
+GetLinkBtn.TextColor3 = Color3.new(1,1,1)
+GetLinkBtn.Parent = KeyFrame
+Instance.new("UICorner", GetLinkBtn)
+
+local KeyStatus = Instance.new("TextLabel")
+KeyStatus.Size = UDim2.new(1,0,0,20)
+KeyStatus.Position = UDim2.new(0,0,0.18,0)
+KeyStatus.BackgroundTransparency = 1
+KeyStatus.TextColor3 = Color3.fromRGB(255,255,255)
+KeyStatus.Font = Enum.Font.Gotham
+KeyStatus.TextSize = 12
+KeyStatus.Text = "Enter key to unlock."
+KeyStatus.Parent = KeyFrame
+
+-- Copy Link Function (Mobile Friendly)
+local function copyToClipboard(text)
+    if setclipboard then
+        setclipboard(text)
+    elseif toclipboard then
+        toclipboard(text)
+    end
+end
+
+GetLinkBtn.MouseButton1Click:Connect(function()
+    copyToClipboard(KeyLink)
+    KeyStatus.Text = "✔ Link copied!"
+end)
+
+---------------------------------------------------------------------
+-- AUTO SLAPPER FRAME (HIDDEN UNTIL KEY IS VERIFIED)
+---------------------------------------------------------------------
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 230, 0, 200)
 MainFrame.Position = UDim2.new(0.5, -115, 0.2, 0)
 MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
+MainFrame.Visible = false
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 
--- Title
+---------------------------------------------------------------------
+-- VERIFY KEY BUTTON LOGIC
+---------------------------------------------------------------------
+VerifyKeyBtn.MouseButton1Click:Connect(function()
+    if KeyBox.Text == CorrectKey then
+        KeyStatus.Text = "✔ Correct key!"
+        task.wait(0.3)
+        KeyFrame.Visible = false
+        MainFrame.Visible = true
+    else
+        KeyStatus.Text = "❌ Wrong key."
+    end
+end)
+
+---------------------------------------------------------------------
+-- TITLE
+---------------------------------------------------------------------
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 35)
-Title.Position = UDim2.new(0,0,0,0)
 Title.BackgroundColor3 = Color3.fromRGB(30,30,30)
 Title.Text = "AutoSlapper-duminik.gg"
 Title.TextColor3 = Color3.new(1,1,1)
@@ -29,7 +140,9 @@ Title.TextSize = 16
 Title.Parent = MainFrame
 Instance.new("UICorner", Title)
 
--- InputFrame + TextBox
+---------------------------------------------------------------------
+-- INPUT FRAME + TEXTBOX
+---------------------------------------------------------------------
 local InputFrame = Instance.new("Frame")
 InputFrame.Size = UDim2.new(0.9, 0, 0, 35)
 InputFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
@@ -48,7 +161,9 @@ PlayerTextBox.TextSize = 14
 PlayerTextBox.TextColor3 = Color3.new(1,1,1)
 PlayerTextBox.Parent = InputFrame
 
--- Start / Stop buttons
+---------------------------------------------------------------------
+-- BUTTONS
+---------------------------------------------------------------------
 local StartBtn = Instance.new("TextButton")
 StartBtn.Size = UDim2.new(0.9,0,0,40)
 StartBtn.Position = UDim2.new(0.05,0,0.48,0)
@@ -70,7 +185,9 @@ StopBtn.Parent = MainFrame
 StopBtn.Visible = false
 Instance.new("UICorner", StopBtn)
 
--- Status label
+---------------------------------------------------------------------
+-- STATUS LABEL
+---------------------------------------------------------------------
 local Status = Instance.new("TextLabel")
 Status.Size = UDim2.new(1,-10,0,20)
 Status.Position = UDim2.new(0,5,0.88,0)
@@ -81,7 +198,9 @@ Status.Font = Enum.Font.Gotham
 Status.TextSize = 12
 Status.Parent = MainFrame
 
--- Logic
+---------------------------------------------------------------------
+-- AUTO SLAPPER LOGIC (YOUR ORIGINAL LOGIC)
+---------------------------------------------------------------------
 local isLooping = false
 local loopThread = nil
 
@@ -102,7 +221,6 @@ local function findPlayersByPartial(input)
         if plr ~= LocalPlayer then
             local name = plr.Name:lower()
             for _, t in ipairs(terms) do
-                -- use plain text search (true = plain)
                 if name:find(t, 1, true) then
                     table.insert(found, plr)
                     break
@@ -113,35 +231,28 @@ local function findPlayersByPartial(input)
     return found
 end
 
--- find a tool named "Default Slapper" in backpack or character; return tool and any RemoteEvent under it
 local function findSlapperAndRemote()
     local function findIn(container)
         if not container then return nil end
         local tool = container:FindFirstChild("Default Slapper")
         if tool then
-            -- search for any RemoteEvent under tool (descendants)
             for _, descendant in ipairs(tool:GetDescendants()) do
                 if descendant:IsA("RemoteEvent") then
                     return tool, descendant
                 end
             end
-            -- if none, still return tool (maybe remote named differently)
             return tool, nil
         end
         return nil
     end
 
-    -- check Backpack first, then Character
     local backpack = LocalPlayer:FindFirstChild("Backpack")
     local char = LocalPlayer.Character
     local tool, remote = findIn(backpack)
-    if tool then
-        return tool, remote
-    end
+    if tool then return tool, remote end
+
     tool, remote = findIn(char)
-    if tool then
-        return tool, remote
-    end
+    if tool then return tool, remote end
 
     return nil, nil
 end
@@ -156,7 +267,6 @@ local function slapPlayer(targetPlayer)
         return false, "no_tool"
     end
 
-    -- try to find remote if not discovered earlier
     if not remote then
         for _, desc in ipairs(tool:GetDescendants()) do
             if desc:IsA("RemoteEvent") then
@@ -170,7 +280,6 @@ local function slapPlayer(targetPlayer)
         return false, "no_remote"
     end
 
-    -- attempt to fire
     local success, err = pcall(function()
         remote:FireServer(targetPlayer.Character)
     end)
@@ -201,41 +310,34 @@ local function startLoop()
     StopBtn.Visible = true
     Status.Text = "🔁 Loop started ("..#targets.." target(s))"
 
-    -- run loop in separate thread to avoid RunService yielding issues
     loopThread = task.spawn(function()
         while isLooping do
             for _, plr in ipairs(targets) do
-                local ok, reason = slapPlayer(plr)
-                if not ok then
-                    -- show short debug in status (don't spam)
-                    Status.Text = "Warning: "..tostring(reason)
-                end
+                slapPlayer(plr)
             end
-            task.wait(1) -- delay between iterations
+            task.wait(1)
         end
     end)
 end
 
 local function stopLoop()
     isLooping = false
-    if loopThread then
-        -- thread will exit naturally
-        loopThread = nil
-    end
     StartBtn.Visible = true
     StopBtn.Visible = false
     Status.Text = "Stopped."
 end
 
--- Connect input for both mouse and touch
 StartBtn.MouseButton1Click:Connect(startLoop)
 StopBtn.MouseButton1Click:Connect(stopLoop)
+
 if UserInputService.TouchEnabled then
     StartBtn.TouchTap:Connect(startLoop)
     StopBtn.TouchTap:Connect(stopLoop)
 end
 
--- make draggable (simple)
+---------------------------------------------------------------------
+-- DRAGGABLE GUI
+---------------------------------------------------------------------
 local dragging, dragStart, startPos
 MainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
