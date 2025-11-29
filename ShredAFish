@@ -1,0 +1,265 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+-- Create ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "PlayerSlapperGUI"
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+-- MainFrame (small)
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 230, 0, 200)
+MainFrame.Position = UDim2.new(0.5, -115, 0.2, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.Position = UDim2.new(0,0,0,0)
+Title.BackgroundColor3 = Color3.fromRGB(30,30,30)
+Title.Text = "🎯 Auto Slapper"
+Title.TextColor3 = Color3.new(1,1,1)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 16
+Title.Parent = MainFrame
+Instance.new("UICorner", Title)
+
+-- InputFrame + TextBox
+local InputFrame = Instance.new("Frame")
+InputFrame.Size = UDim2.new(0.9, 0, 0, 35)
+InputFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
+InputFrame.BackgroundColor3 = Color3.fromRGB(50,50,50)
+InputFrame.BorderSizePixel = 0
+InputFrame.Parent = MainFrame
+Instance.new("UICorner", InputFrame)
+
+local PlayerTextBox = Instance.new("TextBox")
+PlayerTextBox.Size = UDim2.new(1,0,1,0)
+PlayerTextBox.BackgroundTransparency = 1
+PlayerTextBox.PlaceholderText = "player name(s)"
+PlayerTextBox.Text = ""
+PlayerTextBox.Font = Enum.Font.Gotham
+PlayerTextBox.TextSize = 14
+PlayerTextBox.TextColor3 = Color3.new(1,1,1)
+PlayerTextBox.Parent = InputFrame
+
+-- Start / Stop buttons
+local StartBtn = Instance.new("TextButton")
+StartBtn.Size = UDim2.new(0.9,0,0,40)
+StartBtn.Position = UDim2.new(0.05,0,0.48,0)
+StartBtn.BackgroundColor3 = Color3.fromRGB(0,100,255)
+StartBtn.Text = "🎯 START LOOP"
+StartBtn.Font = Enum.Font.GothamBold
+StartBtn.TextSize = 15
+StartBtn.Parent = MainFrame
+Instance.new("UICorner", StartBtn)
+
+local StopBtn = Instance.new("TextButton")
+StopBtn.Size = UDim2.new(0.9,0,0,35)
+StopBtn.Position = UDim2.new(0.05,0,0.72,0)
+StopBtn.BackgroundColor3 = Color3.fromRGB(255,50,50)
+StopBtn.Text = "🛑 STOP"
+StopBtn.Font = Enum.Font.Gotham
+StopBtn.TextSize = 14
+StopBtn.Parent = MainFrame
+StopBtn.Visible = false
+Instance.new("UICorner", StopBtn)
+
+-- Status label
+local Status = Instance.new("TextLabel")
+Status.Size = UDim2.new(1,-10,0,20)
+Status.Position = UDim2.new(0,5,0.88,0)
+Status.BackgroundTransparency = 1
+Status.TextColor3 = Color3.new(1,1,1)
+Status.Text = "Ready."
+Status.Font = Enum.Font.Gotham
+Status.TextSize = 12
+Status.Parent = MainFrame
+
+-- Logic
+local isLooping = false
+local loopThread = nil
+
+local function splitAndTrim(input)
+    local terms = {}
+    for term in input:gmatch("[^,]+") do
+        local t = term:gsub("^%s*(.-)%s*$", "%1")
+        if t ~= "" then table.insert(terms, t:lower()) end
+    end
+    return terms
+end
+
+local function findPlayersByPartial(input)
+    local terms = splitAndTrim(input)
+    local found = {}
+    if #terms == 0 then return found end
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            local name = plr.Name:lower()
+            for _, t in ipairs(terms) do
+                -- use plain text search (true = plain)
+                if name:find(t, 1, true) then
+                    table.insert(found, plr)
+                    break
+                end
+            end
+        end
+    end
+    return found
+end
+
+-- find a tool named "Default Slapper" in backpack or character; return tool and any RemoteEvent under it
+local function findSlapperAndRemote()
+    local function findIn(container)
+        if not container then return nil end
+        local tool = container:FindFirstChild("Default Slapper")
+        if tool then
+            -- search for any RemoteEvent under tool (descendants)
+            for _, descendant in ipairs(tool:GetDescendants()) do
+                if descendant:IsA("RemoteEvent") then
+                    return tool, descendant
+                end
+            end
+            -- if none, still return tool (maybe remote named differently)
+            return tool, nil
+        end
+        return nil
+    end
+
+    -- check Backpack first, then Character
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+    local char = LocalPlayer.Character
+    local tool, remote = findIn(backpack)
+    if tool then
+        return tool, remote
+    end
+    tool, remote = findIn(char)
+    if tool then
+        return tool, remote
+    end
+
+    return nil, nil
+end
+
+local function slapPlayer(targetPlayer)
+    if not targetPlayer or not targetPlayer.Character then
+        return false, "no_character"
+    end
+
+    local tool, remote = findSlapperAndRemote()
+    if not tool then
+        return false, "no_tool"
+    end
+
+    -- try to find remote if not discovered earlier
+    if not remote then
+        for _, desc in ipairs(tool:GetDescendants()) do
+            if desc:IsA("RemoteEvent") then
+                remote = desc
+                break
+            end
+        end
+    end
+
+    if not remote then
+        return false, "no_remote"
+    end
+
+    -- attempt to fire
+    local success, err = pcall(function()
+        remote:FireServer(targetPlayer.Character)
+    end)
+    if not success then
+        return false, "fire_error: "..tostring(err)
+    end
+
+    return true
+end
+
+local function startLoop()
+    if isLooping then return end
+
+    local input = PlayerTextBox.Text or ""
+    if input:match("^%s*$") then
+        Status.Text = "❌ Enter player name(s)."
+        return
+    end
+
+    local targets = findPlayersByPartial(input)
+    if #targets == 0 then
+        Status.Text = "❌ No players found."
+        return
+    end
+
+    isLooping = true
+    StartBtn.Visible = false
+    StopBtn.Visible = true
+    Status.Text = "🔁 Loop started ("..#targets.." target(s))"
+
+    -- run loop in separate thread to avoid RunService yielding issues
+    loopThread = task.spawn(function()
+        while isLooping do
+            for _, plr in ipairs(targets) do
+                local ok, reason = slapPlayer(plr)
+                if not ok then
+                    -- show short debug in status (don't spam)
+                    Status.Text = "Warning: "..tostring(reason)
+                end
+            end
+            task.wait(1) -- delay between iterations
+        end
+    end)
+end
+
+local function stopLoop()
+    isLooping = false
+    if loopThread then
+        -- thread will exit naturally
+        loopThread = nil
+    end
+    StartBtn.Visible = true
+    StopBtn.Visible = false
+    Status.Text = "Stopped."
+end
+
+-- Connect input for both mouse and touch
+StartBtn.MouseButton1Click:Connect(startLoop)
+StopBtn.MouseButton1Click:Connect(stopLoop)
+if UserInputService.TouchEnabled then
+    StartBtn.TouchTap:Connect(startLoop)
+    StopBtn.TouchTap:Connect(stopLoop)
+end
+
+-- make draggable (simple)
+local dragging, dragStart, startPos
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+MainFrame.InputChanged:Connect(function(input)
+    if dragging and input.Position then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+Status.Text = "Ready."
