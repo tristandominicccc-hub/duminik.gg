@@ -3,9 +3,6 @@ local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
-local CorrectKey = "SAF-DUMINIK.GG"
-local KeyLink = "https://linkvertise.com/1452085/CM2Wj9Mehwfc?o=sharing"
-
 ---------------------------------------------------------------------
 -- MAIN GUI HOLDER
 ---------------------------------------------------------------------
@@ -14,92 +11,7 @@ ScreenGui.Name = "PlayerSlapperGUI"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 ---------------------------------------------------------------------
--- KEY SYSTEM GUI
----------------------------------------------------------------------
-local KeyFrame = Instance.new("Frame")
-KeyFrame.Size = UDim2.new(0, 250, 0, 180)
-KeyFrame.Position = UDim2.new(0.5, -125, 0.25, 0)
-KeyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-KeyFrame.BorderSizePixel = 0
-KeyFrame.Parent = ScreenGui
-Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 10)
-
-local KeyTitle = Instance.new("TextLabel")
-KeyTitle.Size = UDim2.new(1, 0, 0, 40)
-KeyTitle.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-KeyTitle.Text = "🔑 Key System"
-KeyTitle.TextColor3 = Color3.new(1,1,1)
-KeyTitle.Font = Enum.Font.GothamBold
-KeyTitle.TextSize = 16
-KeyTitle.Parent = KeyFrame
-Instance.new("UICorner", KeyTitle)
-
-local KeyBoxFrame = Instance.new("Frame")
-KeyBoxFrame.Size = UDim2.new(0.9, 0, 0, 35)
-KeyBoxFrame.Position = UDim2.new(0.05, 0, 0.28, 0)
-KeyBoxFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-KeyBoxFrame.BorderSizePixel = 0
-KeyBoxFrame.Parent = KeyFrame
-Instance.new("UICorner", KeyBoxFrame)
-
-local KeyBox = Instance.new("TextBox")
-KeyBox.Size = UDim2.new(1, 0, 1, 0)
-KeyBox.BackgroundTransparency = 1
-KeyBox.PlaceholderText = "Enter key"
-KeyBox.Text = ""
-KeyBox.Font = Enum.Font.Gotham
-KeyBox.TextSize = 14
-KeyBox.TextColor3 = Color3.new(1,1,1)
-KeyBox.Parent = KeyBoxFrame
-
-local VerifyKeyBtn = Instance.new("TextButton")
-VerifyKeyBtn.Size = UDim2.new(0.9,0,0,40)
-VerifyKeyBtn.Position = UDim2.new(0.05,0,0.60,0)
-VerifyKeyBtn.BackgroundColor3 = Color3.fromRGB(0,170,0)
-VerifyKeyBtn.Text = "✔ VERIFY"
-VerifyKeyBtn.Font = Enum.Font.GothamBold
-VerifyKeyBtn.TextSize = 15
-VerifyKeyBtn.TextColor3 = Color3.new(1,1,1)
-VerifyKeyBtn.Parent = KeyFrame
-Instance.new("UICorner", VerifyKeyBtn)
-
-local GetLinkBtn = Instance.new("TextButton")
-GetLinkBtn.Size = UDim2.new(0.9,0,0,35)
-GetLinkBtn.Position = UDim2.new(0.05,0,0.82,0)
-GetLinkBtn.BackgroundColor3 = Color3.fromRGB(0,90,255)
-GetLinkBtn.Text = "🔗 GET LINK"
-GetLinkBtn.Font = Enum.Font.GothamBold
-GetLinkBtn.TextSize = 14
-GetLinkBtn.TextColor3 = Color3.new(1,1,1)
-GetLinkBtn.Parent = KeyFrame
-Instance.new("UICorner", GetLinkBtn)
-
-local KeyStatus = Instance.new("TextLabel")
-KeyStatus.Size = UDim2.new(1,0,0,20)
-KeyStatus.Position = UDim2.new(0,0,0.18,0)
-KeyStatus.BackgroundTransparency = 1
-KeyStatus.TextColor3 = Color3.fromRGB(255,255,255)
-KeyStatus.Font = Enum.Font.Gotham
-KeyStatus.TextSize = 12
-KeyStatus.Text = "Enter key to unlock."
-KeyStatus.Parent = KeyFrame
-
--- Copy Link Function (Mobile Friendly)
-local function copyToClipboard(text)
-    if setclipboard then
-        setclipboard(text)
-    elseif toclipboard then
-        toclipboard(text)
-    end
-end
-
-GetLinkBtn.MouseButton1Click:Connect(function()
-    copyToClipboard(KeyLink)
-    KeyStatus.Text = "✔ Link copied!"
-end)
-
----------------------------------------------------------------------
--- AUTO SLAPPER FRAME (HIDDEN UNTIL KEY IS VERIFIED)
+-- AUTO SLAPPER FRAME
 ---------------------------------------------------------------------
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 230, 0, 200)
@@ -107,22 +19,8 @@ MainFrame.Position = UDim2.new(0.5, -115, 0.2, 0)
 MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
-MainFrame.Visible = false
+MainFrame.Visible = true
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
-
----------------------------------------------------------------------
--- VERIFY KEY BUTTON LOGIC
----------------------------------------------------------------------
-VerifyKeyBtn.MouseButton1Click:Connect(function()
-    if KeyBox.Text == CorrectKey then
-        KeyStatus.Text = "✔ Correct key!"
-        task.wait(0.3)
-        KeyFrame.Visible = false
-        MainFrame.Visible = true
-    else
-        KeyStatus.Text = "❌ Wrong key."
-    end
-end)
 
 ---------------------------------------------------------------------
 -- TITLE
