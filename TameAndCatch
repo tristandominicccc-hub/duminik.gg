@@ -1,0 +1,85 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+
+-- GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "MobilePrettyButton"
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+-- Button
+local Button = Instance.new("TextButton")
+Button.Name = "CATCH"
+Button.Parent = ScreenGui
+Button.Size = UDim2.new(0, 80, 0, 35) -- Smaller size
+Button.Position = UDim2.new(0.5, -40, 0.82, 0)
+Button.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- White background
+Button.TextColor3 = Color3.fromRGB(0, 0, 0) -- Black text
+Button.TextScaled = true
+Button.Text = "CATCH"
+Button.BorderSizePixel = 0
+Button.AutoButtonColor = true
+
+-- UI Styling
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 10)
+Corner.Parent = Button
+
+local Stroke = Instance.new("UIStroke")
+Stroke.Thickness = 2
+Stroke.Color = Color3.fromRGB(0, 0, 0) -- Black stroke
+Stroke.Parent = Button
+
+----------------------------------------------------------------
+-- Draggable system (Works for MOBILE & PC)
+----------------------------------------------------------------
+local dragging = false
+local dragStart
+local startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    Button.Position = UDim2.new(
+        startPos.X.Scale,
+        startPos.X.Offset + delta.X,
+        startPos.Y.Scale,
+        startPos.Y.Offset + delta.Y
+    )
+end
+
+Button.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = Button.Position
+    end
+end)
+
+Button.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+    or input.UserInputType == Enum.UserInputType.Touch) then
+        update(input)
+    end
+end)
+
+----------------------------------------------------------------
+-- EXECUTE ORIGINAL SCRIPT WHEN CLICKED (maintained from your original)
+----------------------------------------------------------------
+Button.MouseButton1Click:Connect(function()
+    local args = {
+        100
+    }
+    game:GetService("ReplicatedStorage")
+        :WaitForChild("Remotes")
+        :WaitForChild("UpdateProgress")
+        :FireServer(unpack(args))
+end)
