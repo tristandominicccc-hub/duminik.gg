@@ -1,0 +1,229 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+---------------------------------------------------------------------
+-- SCREEN GUI
+---------------------------------------------------------------------
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = PlayerGui
+
+---------------------------------------------------------------------
+-- FRAME
+---------------------------------------------------------------------
+local Frame = Instance.new("Frame")
+Frame.Parent = ScreenGui
+Frame.Size = UDim2.new(0, 200, 0, 250)
+Frame.Position = UDim2.new(0.5, -100, 0.55, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Frame.BackgroundTransparency = 0.15
+Frame.BorderSizePixel = 0
+
+local FrameCorner = Instance.new("UICorner", Frame)
+FrameCorner.CornerRadius = UDim.new(0, 10)
+
+---------------------------------------------------------------------
+-- COLLAPSE HEADER BUTTON
+---------------------------------------------------------------------
+local Header = Instance.new("TextButton")
+Header.Parent = Frame
+Header.Size = UDim2.new(1, 0, 0, 25)
+Header.Position = UDim2.new(0, 0, 0, 0)
+Header.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Header.TextColor3 = Color3.fromRGB(255,255,255)
+Header.Text = "Menu ▼"
+Header.TextScaled = true
+local HeaderCorner = Instance.new("UICorner", Header)
+
+---------------------------------------------------------------------
+-- CREATE BUTTON FUNCTION
+---------------------------------------------------------------------
+local function createButton(parent, text, color, positionY)
+	local btn = Instance.new("TextButton")
+	btn.Parent = parent
+	btn.Size = UDim2.new(1, -20, 0, 35)
+	btn.Position = UDim2.new(0, 10, 0, positionY)
+	btn.BackgroundColor3 = color
+	btn.TextColor3 = Color3.fromRGB(255,255,255)
+	btn.TextScaled = true
+	btn.Text = text
+	Instance.new("UICorner", btn)
+	return btn
+end
+
+-- Create all buttons and store them in a table
+local buttons = {}
+local TrashButton = createButton(Frame, "Trash Can and Trash Bag", Color3.fromRGB(60,180,75), 30)
+local JunkButton = createButton(Frame, "Junk Pile and Radioactive Junk", Color3.fromRGB(180,100,220), 70)
+local SellButton = createButton(Frame, "SELL", Color3.fromRGB(80,80,200), 110)
+local HungerButton = createButton(Frame, "RESTORE HUNGER", Color3.fromRGB(200,80,80), 145)
+local MoneyButton = createButton(Frame, "Infinite Money", Color3.fromRGB(255,180,0), 185)
+
+-- Add buttons to table for easy management
+table.insert(buttons, TrashButton)
+table.insert(buttons, JunkButton)
+table.insert(buttons, SellButton)
+table.insert(buttons, HungerButton)
+table.insert(buttons, MoneyButton)
+
+-- NOTE LABEL BELOW INFINITE MONEY BUTTON
+local InfNote = Instance.new("TextLabel")
+InfNote.Parent = Frame
+InfNote.Size = UDim2.new(1, -20, 0, 30)
+InfNote.Position = UDim2.new(0, 10, 0, 225)
+InfNote.BackgroundTransparency = 1
+InfNote.TextColor3 = Color3.fromRGB(255, 255, 255)
+InfNote.TextScaled = true
+InfNote.TextWrapped = true
+InfNote.Text = "Note: Turn off all features and rejoin to work Infinite Money"
+
+local isCollapsed = false
+
+---------------------------------------------------------------------
+-- COLLAPSE/EXPAND FUNCTION
+---------------------------------------------------------------------
+Header.MouseButton1Click:Connect(function()
+	isCollapsed = not isCollapsed
+	
+	if isCollapsed then
+		for _, button in pairs(buttons) do
+			button.Visible = false
+		end
+		InfNote.Visible = false
+		Frame.Size = UDim2.new(0, 200, 0, 25)
+		Header.Text = "Menu ▲"
+	else
+		for _, button in pairs(buttons) do
+			button.Visible = true
+		end
+		InfNote.Visible = true
+		Frame.Size = UDim2.new(0, 200, 0, 260) -- auto-resized to fit note
+		Header.Text = "Menu ▼"
+	end
+end)
+
+---------------------------------------------------------------------
+-- DRAGGING SYSTEM
+---------------------------------------------------------------------
+local dragging = false
+local dragInput, dragStart, startPos
+local function update(input)
+	local delta = input.Position - dragStart
+	Frame.Position = UDim2.new(
+		startPos.X.Scale,
+		startPos.X.Offset + delta.X,
+		startPos.Y.Scale,
+		startPos.Y.Offset + delta.Y
+	)
+end
+
+Header.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = Frame.Position
+	end
+end)
+
+Header.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then update(input) end
+end)
+
+Header.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = false
+	end
+end)
+
+---------------------------------------------------------------------
+-- LOOP BUTTON FUNCTION
+---------------------------------------------------------------------
+local function createLoopButton(button, actions, colorDefault, colorActive, defaultText)
+	local enabled = false
+	button.MouseButton1Click:Connect(function()
+		enabled = not enabled
+		if enabled then
+			button.BackgroundColor3 = colorActive
+			button.Text = defaultText..": ON"
+		else
+			button.BackgroundColor3 = colorDefault
+			button.Text = defaultText
+		end
+
+		task.spawn(function()
+			while enabled do
+				for _, action in pairs(actions) do
+					ReplicatedStorage:WaitForChild(action.Remote):FireServer(unpack(action.Args))
+				end
+				task.wait(1)
+			end
+		end)
+	end)
+end
+
+-- Trash Can + Trash Bag together
+createLoopButton(
+	TrashButton,
+	{
+		{Remote="TrashLoot", Args={"Trash Can"}},
+		{Remote="TrashLoot", Args={"Trash Bag"}}
+	},
+	Color3.fromRGB(60,180,75),
+	Color3.fromRGB(250,80,80),
+	"Trash Can and Trash Bag"
+)
+
+-- Junk Pile + Radioactive Junk together
+createLoopButton(
+	JunkButton,
+	{
+		{Remote="ScrapLoot", Args={"Junk"}},
+		{Remote="RadioactiveLoot", Args={"RadioactiveJunk"}}
+	},
+	Color3.fromRGB(180,100,220),
+	Color3.fromRGB(220,150,250),
+	"Junk Pile and Radioactive Junk"
+)
+
+---------------------------------------------------------------------
+-- SINGLE CLICK BUTTONS
+---------------------------------------------------------------------
+SellButton.MouseButton1Click:Connect(function()
+	ReplicatedStorage:WaitForChild("SellAllItems"):FireServer()
+end)
+
+HungerButton.MouseButton1Click:Connect(function()
+	ReplicatedStorage:WaitForChild("ReduceHunger"):FireServer(100)
+end)
+
+---------------------------------------------------------------------
+-- INFINITE MONEY BUTTON
+---------------------------------------------------------------------
+local InfOn = false
+MoneyButton.MouseButton1Click:Connect(function()
+	InfOn = not InfOn
+	if InfOn then
+		MoneyButton.BackgroundColor3 = Color3.fromRGB(255,100,0)
+		MoneyButton.Text = "Infinite Money: ON"
+		task.spawn(function()
+			local infRemote = ReplicatedStorage:WaitForChild("TicTacToeWin")
+			while InfOn do
+				for i = 1, 80 do  -- adjust speed if needed
+					infRemote:FireServer()
+				end
+				task.wait()
+			end
+		end)
+	else
+		MoneyButton.BackgroundColor3 = Color3.fromRGB(255,180,0)
+		MoneyButton.Text = "Infinite Money"
+	end
+end)
