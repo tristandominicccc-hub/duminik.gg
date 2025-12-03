@@ -1,44 +1,294 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local Window = Rayfield:CreateWindow({
-   Name = "duminik.gg",
-   Icon = 0,
-   LoadingTitle = "duminik.gg",
-   LoadingSubtitle = "by duminik",
-   ShowText = "duminik.gg",
-   Theme = "Default",
-   ToggleUIKeybind = "K",
-   DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false,
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = nil,
-      FileName = "duminik.gg"
-   },
-   Discord = {
-      Enabled = true,
-      Invite = "https://discord.gg/ZRZ6N5Ef8",
-      RememberJoins = false
-   },
-   KeySystem = true,
-   KeySettings = {
-      Title = "duminik.gg",
-      Subtitle = "Key System",
-      Note = "The Key is HanniPhamMyLove",
-      FileName = "duminik.gg",
-      SaveKey = true,
-      GrabKeyFromSite = false,
-      Key = {"HanniPhamMyLove"}
-   }
-})
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
-local Tab = Window:CreateTab("EGGS", 4483362458)
-local Section = Tab:CreateSection("Egg Types")
+-- Create main screen GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "duminik.gg"
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.ResetOnSpawn = false
+if gethui then
+    ScreenGui.Parent = gethui()
+else
+    ScreenGui.Parent = PlayerGui
+end
+
+-- === MAIN GUI SECTION ===
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 380, 0, 320)
+MainFrame.Position = UDim2.new(0.5, -190, 0.5, -160)
+MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+MainFrame.Visible = true
+MainFrame.Parent = ScreenGui
+
+-- Corner
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 6)
+Corner.Parent = MainFrame
+
+-- Stroke
+local Stroke = Instance.new("UIStroke")
+Stroke.Color = Color3.fromRGB(80, 80, 80)
+Stroke.Thickness = 2
+Stroke.Parent = MainFrame
+
+-- Title bar (HORIZONTAL)
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Size = UDim2.new(1, 0, 0, 35)
+TitleBar.Position = UDim2.new(0, 0, 0, 0)
+TitleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 6)
+TitleCorner.Parent = TitleBar
+
+-- Title text
+local TitleText = Instance.new("TextLabel")
+TitleText.Name = "TitleText"
+TitleText.Size = UDim2.new(0, 150, 1, 0)
+TitleText.Position = UDim2.new(0, 10, 0, 0)
+TitleText.BackgroundTransparency = 1
+TitleText.Text = "duminik.gg"
+TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
+TitleText.Font = Enum.Font.GothamBold
+TitleText.TextSize = 14
+TitleText.Parent = TitleBar
+
+-- Minimize button
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Name = "MinimizeButton"
+MinimizeButton.Size = UDim2.new(0, 25, 0, 25)
+MinimizeButton.Position = UDim2.new(1, -55, 0.5, -12.5)
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+MinimizeButton.BorderSizePixel = 0
+MinimizeButton.Text = "–"
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.TextSize = 16
+MinimizeButton.Parent = TitleBar
+
+local MinCorner = Instance.new("UICorner")
+MinCorner.CornerRadius = UDim.new(0, 4)
+MinCorner.Parent = MinimizeButton
+
+-- Exit button
+local ExitButton = Instance.new("TextButton")
+ExitButton.Name = "ExitButton"
+ExitButton.Size = UDim2.new(0, 25, 0, 25)
+ExitButton.Position = UDim2.new(1, -25, 0.5, -12.5)
+ExitButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+ExitButton.BorderSizePixel = 0
+ExitButton.Text = "X"
+ExitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExitButton.Font = Enum.Font.GothamBold
+ExitButton.TextSize = 12
+ExitButton.Parent = TitleBar
+
+local ExitCorner = Instance.new("UICorner")
+ExitCorner.CornerRadius = UDim.new(0, 4)
+ExitCorner.Parent = ExitButton
+
+-- Top Tabs for Horizontal Layout
+local TopTabContainer = Instance.new("Frame")
+TopTabContainer.Name = "TopTabContainer"
+TopTabContainer.Size = UDim2.new(1, 0, 0, 40)
+TopTabContainer.Position = UDim2.new(0, 0, 0, 35)
+TopTabContainer.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+TopTabContainer.BorderSizePixel = 0
+TopTabContainer.Parent = MainFrame
+
+-- Content area (HORIZONTAL)
+local ContentArea = Instance.new("Frame")
+ContentArea.Name = "ContentArea"
+ContentArea.Size = UDim2.new(1, 0, 1, -75)
+ContentArea.Position = UDim2.new(0, 0, 0, 75)
+ContentArea.BackgroundTransparency = 1
+ContentArea.Parent = MainFrame
+
+-- Tab buttons - Using your original tab names
+local tabs = {
+    {name = "EGGS", key = "Eggs"},
+    {name = "FOODS", key = "Foods"},
+    {name = "GEARS", key = "Gears"},
+    {name = "SELL", key = "Sell"},
+    {name = "AUTO UPGRADE", key = "Upgrade"}
+}
+
+local tabButtons = {}
+
+for i, tab in pairs(tabs) do
+    local tabButton = Instance.new("TextButton")
+    tabButton.Name = tab.key .. "Tab"
+    tabButton.Size = UDim2.new(1 / #tabs, 0, 1, 0)
+    tabButton.Position = UDim2.new((i-1) / #tabs, 0, 0, 0)
+    tabButton.BackgroundColor3 = i == 1 and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(35, 35, 35)
+    tabButton.BorderSizePixel = 0
+    tabButton.Text = tab.name
+    tabButton.TextColor3 = i == 1 and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 200, 200)
+    tabButton.Font = i == 1 and Enum.Font.GothamBold or Enum.Font.Gotham
+    tabButton.TextSize = 8
+    tabButton.Parent = TopTabContainer
+    
+    tabButtons[tab.key] = tabButton
+end
+
+-- Content frames
+local EggsContent = Instance.new("Frame")
+EggsContent.Name = "EggsContent"
+EggsContent.Size = UDim2.new(1, 0, 1, 0)
+EggsContent.BackgroundTransparency = 1
+EggsContent.Visible = true
+EggsContent.Parent = ContentArea
+
+local FoodsContent = Instance.new("Frame")
+FoodsContent.Name = "FoodsContent"
+FoodsContent.Size = UDim2.new(1, 0, 1, 0)
+FoodsContent.BackgroundTransparency = 1
+FoodsContent.Visible = false
+FoodsContent.Parent = ContentArea
+
+local GearsContent = Instance.new("Frame")
+GearsContent.Name = "GearsContent"
+GearsContent.Size = UDim2.new(1, 0, 1, 0)
+GearsContent.BackgroundTransparency = 1
+GearsContent.Visible = false
+GearsContent.Parent = ContentArea
+
+local SellContent = Instance.new("Frame")
+SellContent.Name = "SellContent"
+SellContent.Size = UDim2.new(1, 0, 1, 0)
+SellContent.BackgroundTransparency = 1
+SellContent.Visible = false
+SellContent.Parent = ContentArea
+
+local UpgradeContent = Instance.new("Frame")
+UpgradeContent.Name = "UpgradeContent"
+UpgradeContent.Size = UDim2.new(1, 0, 1, 0)
+UpgradeContent.BackgroundTransparency = 1
+UpgradeContent.Visible = false
+UpgradeContent.Parent = ContentArea
+
+-- Scrolling frames
+local function createScrollFrame(parent)
+    local scroll = Instance.new("ScrollingFrame")
+    scroll.Size = UDim2.new(1, -5, 1, -5)
+    scroll.Position = UDim2.new(0, 2, 0, 2)
+    scroll.BackgroundTransparency = 1
+    scroll.BorderSizePixel = 0
+    scroll.ScrollBarThickness = 3
+    scroll.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    scroll.Parent = parent
+    
+    local layout = Instance.new("UIListLayout")
+    layout.Padding = UDim.new(0, 5)
+    layout.Parent = scroll
+    
+    return scroll, layout
+end
+
+local EggsScroll, EggsListLayout = createScrollFrame(EggsContent)
+local FoodsScroll, FoodsListLayout = createScrollFrame(FoodsContent)
+local GearsScroll, GearsListLayout = createScrollFrame(GearsContent)
+local SellScroll, SellListLayout = createScrollFrame(SellContent)
+local UpgradeScroll, UpgradeListLayout = createScrollFrame(UpgradeContent)
+
+-- Mobile drag functionality
+local dragging = false
+local dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    local target = MainFrame
+    target.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+local function startDragging(input, frame)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end
+
+TitleBar.InputBegan:Connect(function(input) startDragging(input, MainFrame) end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then update(input) end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+-- Minimize/Exit functionality
+local isMinimized = false
+
+MinimizeButton.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    if isMinimized then
+        MainFrame.Size = UDim2.new(0, 380, 0, 35)
+        TopTabContainer.Visible = false
+        ContentArea.Visible = false
+    else
+        MainFrame.Size = UDim2.new(0, 380, 0, 320)
+        TopTabContainer.Visible = true
+        ContentArea.Visible = true
+    end
+end)
+
+ExitButton.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+-- Tab switching function
+local function switchToTab(tabName)
+    for _, v in pairs({EggsContent, FoodsContent, GearsContent, SellContent, UpgradeContent}) do
+        v.Visible = false
+    end
+    
+    for _, tabButton in pairs(tabButtons) do
+        tabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        tabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+        tabButton.Font = Enum.Font.Gotham
+    end
+    
+    if tabButtons[tabName] then
+        tabButtons[tabName].BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        tabButtons[tabName].TextColor3 = Color3.fromRGB(255, 255, 255)
+        tabButtons[tabName].Font = Enum.Font.GothamBold
+    end
+
+    if tabName == "Eggs" then EggsContent.Visible = true
+    elseif tabName == "Foods" then FoodsContent.Visible = true
+    elseif tabName == "Gears" then GearsContent.Visible = true
+    elseif tabName == "Sell" then SellContent.Visible = true
+    elseif tabName == "Upgrade" then UpgradeContent.Visible = true
+    end
+end
+
+-- Connect tab buttons
+for key, btn in pairs(tabButtons) do
+    btn.MouseButton1Click:Connect(function() switchToTab(key) end)
+end
 
 -- Variables for egg looping
 local eggLoops = {}
-local delayBetweenCalls = 0.1 -- Adjust this value as needed (in seconds)
+local delayBetweenCalls = 0.1
 
--- List of all eggs you want to add
+-- List of all eggs from your original script
 local eggList = {
    "BasicEgg",
    "GrainEgg", 
@@ -51,44 +301,80 @@ local eggList = {
 
 -- Function to create egg toggle
 local function createEggToggle(eggName)
-   eggLoops[eggName] = false
-   
-   return Tab:CreateToggle({
-      Name = "Auto Buy " .. eggName,
-      CurrentValue = false,
-      Flag = "Auto" .. eggName,
-      Callback = function(Value)
-         eggLoops[eggName] = Value
-         
-         if Value then
+    eggLoops[eggName] = false
+    
+    local ToggleFrame = Instance.new("Frame")
+    ToggleFrame.Size = UDim2.new(1, 0, 0, 40)
+    ToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    ToggleFrame.BorderSizePixel = 0
+    ToggleFrame.Parent = EggsScroll
+    
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(0, 4)
+    ToggleCorner.Parent = ToggleFrame
+    
+    local ToggleLabel = Instance.new("TextLabel")
+    ToggleLabel.Size = UDim2.new(0.65, -8, 0.6, 0)
+    ToggleLabel.Position = UDim2.new(0, 6, 0, 2)
+    ToggleLabel.BackgroundTransparency = 1
+    ToggleLabel.Text = "Auto Buy " .. eggName
+    ToggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ToggleLabel.Font = Enum.Font.GothamBold
+    ToggleLabel.TextSize = 11
+    ToggleLabel.Parent = ToggleFrame
+    
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Size = UDim2.new(0, 50, 0, 22)
+    ToggleButton.Position = UDim2.new(1, -55, 0.5, -11)
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    ToggleButton.BorderSizePixel = 0
+    ToggleButton.Text = "OFF"
+    ToggleButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+    ToggleButton.Font = Enum.Font.GothamBold
+    ToggleButton.TextSize = 9
+    ToggleButton.Parent = ToggleFrame
+    
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 4)
+    ButtonCorner.Parent = ToggleButton
+    
+    ToggleButton.MouseButton1Click:Connect(function()
+        eggLoops[eggName] = not eggLoops[eggName]
+        
+        if eggLoops[eggName] then
+            TweenService:Create(ToggleButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 180, 80)}):Play()
+            ToggleButton.Text = "ON"
+            ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            
             -- Start the loop for this specific egg
-            spawn(function()
-               while eggLoops[eggName] do
-                  local args = { eggName }
-                  game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("EggEvent"):FireServer(unpack(args))
-                  wait(delayBetweenCalls)
-               end
+            task.spawn(function()
+                while eggLoops[eggName] do
+                    pcall(function()
+                        local args = { eggName }
+                        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("EggEvent"):FireServer(unpack(args))
+                    end)
+                    task.wait(delayBetweenCalls)
+                end
             end)
-         end
-         -- No need to manually stop the loop since it checks eggLoops[eggName] each iteration
-      end,
-   })
+        else
+            TweenService:Create(ToggleButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 80)}):Play()
+            ToggleButton.Text = "OFF"
+            ToggleButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+        end
+    end)
 end
 
 -- Create toggles for all eggs
 for _, eggName in pairs(eggList) do
-   createEggToggle(eggName)
+    createEggToggle(eggName)
 end
-
--- Create FOODS Tab
-local FoodsTab = Window:CreateTab("FOODS", 4483362458)
-local FoodsSection = FoodsTab:CreateSection("Food Items")
 
 -- Variables for food looping
 local foodLoops = {}
-local foodDelayBetweenCalls = 0.1 -- Adjust this value as needed (in seconds)
+local foodDelayBetweenCalls = 0.1
 
--- List of all foods you want to add
+-- List of all foods from your original script
 local foodList = {
    "Worm",
    "BirdFeed", 
@@ -99,64 +385,198 @@ local foodList = {
 
 -- Function to create food toggle
 local function createFoodToggle(foodName)
-   foodLoops[foodName] = false
-   
-   return FoodsTab:CreateToggle({
-      Name = "Auto Buy " .. foodName,
-      CurrentValue = false,
-      Flag = "Auto" .. foodName,
-      Callback = function(Value)
-         foodLoops[foodName] = Value
-         
-         if Value then
+    foodLoops[foodName] = false
+    
+    local ToggleFrame = Instance.new("Frame")
+    ToggleFrame.Size = UDim2.new(1, 0, 0, 40)
+    ToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    ToggleFrame.BorderSizePixel = 0
+    ToggleFrame.Parent = FoodsScroll
+    
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(0, 4)
+    ToggleCorner.Parent = ToggleFrame
+    
+    local ToggleLabel = Instance.new("TextLabel")
+    ToggleLabel.Size = UDim2.new(0.65, -8, 0.6, 0)
+    ToggleLabel.Position = UDim2.new(0, 6, 0, 2)
+    ToggleLabel.BackgroundTransparency = 1
+    ToggleLabel.Text = "Auto Buy " .. foodName
+    ToggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ToggleLabel.Font = Enum.Font.GothamBold
+    ToggleLabel.TextSize = 11
+    ToggleLabel.Parent = ToggleFrame
+    
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Size = UDim2.new(0, 50, 0, 22)
+    ToggleButton.Position = UDim2.new(1, -55, 0.5, -11)
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    ToggleButton.BorderSizePixel = 0
+    ToggleButton.Text = "OFF"
+    ToggleButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+    ToggleButton.Font = Enum.Font.GothamBold
+    ToggleButton.TextSize = 9
+    ToggleButton.Parent = ToggleFrame
+    
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 4)
+    ButtonCorner.Parent = ToggleButton
+    
+    ToggleButton.MouseButton1Click:Connect(function()
+        foodLoops[foodName] = not foodLoops[foodName]
+        
+        if foodLoops[foodName] then
+            TweenService:Create(ToggleButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 180, 80)}):Play()
+            ToggleButton.Text = "ON"
+            ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            
             -- Start the loop for this specific food
-            spawn(function()
-               while foodLoops[foodName] do
-                  local args = { foodName }
-                  game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("EggEvent"):FireServer(unpack(args))
-                  wait(foodDelayBetweenCalls)
-               end
+            task.spawn(function()
+                while foodLoops[foodName] do
+                    pcall(function()
+                        local args = { foodName }
+                        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("EggEvent"):FireServer(unpack(args))
+                    end)
+                    task.wait(foodDelayBetweenCalls)
+                end
             end)
-         end
-         -- No need to manually stop the loop since it checks foodLoops[foodName] each iteration
-      end,
-   })
+        else
+            TweenService:Create(ToggleButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 80)}):Play()
+            ToggleButton.Text = "OFF"
+            ToggleButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+        end
+    end)
 end
 
 -- Create toggles for all foods
 for _, foodName in pairs(foodList) do
-   createFoodToggle(foodName)
+    createFoodToggle(foodName)
 end
 
--- Create GEARS Tab (empty)
-local GearsTab = Window:CreateTab("Gears", 4483362458)
-local GearsSection = GearsTab:CreateSection("Gears")
+-- GEARS TAB CONTENT
+local gearsLabel = Instance.new("TextLabel")
+gearsLabel.Size = UDim2.new(1, -10, 0, 80)
+gearsLabel.Position = UDim2.new(0, 5, 0.5, -40)
+gearsLabel.BackgroundTransparency = 1
+gearsLabel.Text = "No Content Available\nbecause the owner is sucks"
+gearsLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+gearsLabel.Font = Enum.Font.GothamBold
+gearsLabel.TextSize = 12
+gearsLabel.TextWrapped = true
+gearsLabel.TextYAlignment = Enum.TextYAlignment.Center
+gearsLabel.Parent = GearsContent
 
--- Add note to Gears tab
-local GearsNote = GearsTab:CreateLabel("No Content Available")
-local GearsMessage = GearsTab:CreateLabel("because the owner is sucks")
+-- SELL TAB CONTENT
+local sellBtn = Instance.new("TextButton")
+sellBtn.Size = UDim2.new(1, -20, 0, 50)
+sellBtn.Position = UDim2.new(0, 10, 0.5, -25)
+sellBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+sellBtn.Text = "SELL ALL"
+sellBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+sellBtn.Font = Enum.Font.GothamBold
+sellBtn.TextSize = 14
+sellBtn.Parent = SellContent
 
--- Create SELL Tab
-local SellTab = Window:CreateTab("Sell", 4483362458)
-local SellSection = SellTab:CreateSection("Sell Items")
+local sellCorner = Instance.new("UICorner")
+sellCorner.CornerRadius = UDim.new(0, 8)
+sellCorner.Parent = sellBtn
 
--- Add Sell All button to Sell tab
-local SellAllButton = SellTab:CreateButton({
-   Name = "Sell All",
-   Callback = function()
-      local args = {"SellAll"}
-      game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("sellEvent"):FireServer(unpack(args))
-   end,
-})
+sellBtn.MouseButton1Click:Connect(function()
+    pcall(function()
+        local args = {"SellAll"}
+        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("sellEvent"):FireServer(unpack(args))
+    end)
+end)
 
--- Create AUTO UPGRADE Tab
-local AutoUpgradeTab = Window:CreateTab("Auto Upgrade", 4483362458)
-local AutoUpgradeSection = AutoUpgradeTab:CreateSection("Auto Upgrade")
+-- AUTO UPGRADE TAB CONTENT (NOW A TOGGLE)
+local autoUpgradeLoop = false
+local upgradeDelay = 0.5  -- Adjust this value as needed
 
--- Add Auto Upgrade button
-local AutoUpgradeButton = AutoUpgradeTab:CreateButton({
-   Name = "Auto Upgrade",
-   Callback = function()
-      game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Upgrade"):FireServer()
-   end,
-})
+local UpgradeToggleFrame = Instance.new("Frame")
+UpgradeToggleFrame.Size = UDim2.new(1, -10, 0, 40)
+UpgradeToggleFrame.Position = UDim2.new(0, 5, 0.5, -20)
+UpgradeToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+UpgradeToggleFrame.BorderSizePixel = 0
+UpgradeToggleFrame.Parent = UpgradeScroll
+
+local UpgradeToggleCorner = Instance.new("UICorner")
+UpgradeToggleCorner.CornerRadius = UDim.new(0, 4)
+UpgradeToggleCorner.Parent = UpgradeToggleFrame
+
+local UpgradeLabel = Instance.new("TextLabel")
+UpgradeLabel.Size = UDim2.new(0.65, -8, 0.6, 0)
+UpgradeLabel.Position = UDim2.new(0, 6, 0, 2)
+UpgradeLabel.BackgroundTransparency = 1
+UpgradeLabel.Text = "Auto Plot Upgrade"
+UpgradeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+UpgradeLabel.TextXAlignment = Enum.TextXAlignment.Left
+UpgradeLabel.Font = Enum.Font.GothamBold
+UpgradeLabel.TextSize = 11
+UpgradeLabel.Parent = UpgradeToggleFrame
+
+local UpgradeToggleButton = Instance.new("TextButton")
+UpgradeToggleButton.Size = UDim2.new(0, 50, 0, 22)
+UpgradeToggleButton.Position = UDim2.new(1, -55, 0.5, -11)
+UpgradeToggleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+UpgradeToggleButton.BorderSizePixel = 0
+UpgradeToggleButton.Text = "OFF"
+UpgradeToggleButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+UpgradeToggleButton.Font = Enum.Font.GothamBold
+UpgradeToggleButton.TextSize = 9
+UpgradeToggleButton.Parent = UpgradeToggleFrame
+
+local UpgradeButtonCorner = Instance.new("UICorner")
+UpgradeButtonCorner.CornerRadius = UDim.new(0, 4)
+UpgradeButtonCorner.Parent = UpgradeToggleButton
+
+UpgradeToggleButton.MouseButton1Click:Connect(function()
+    autoUpgradeLoop = not autoUpgradeLoop
+    
+    if autoUpgradeLoop then
+        TweenService:Create(UpgradeToggleButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 180, 80)}):Play()
+        UpgradeToggleButton.Text = "ON"
+        UpgradeToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        
+        -- Start the auto upgrade loop
+        task.spawn(function()
+            while autoUpgradeLoop do
+                pcall(function()
+                    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Upgrade"):FireServer()
+                end)
+                task.wait(upgradeDelay)
+            end
+        end)
+    else
+        TweenService:Create(UpgradeToggleButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 80)}):Play()
+        UpgradeToggleButton.Text = "OFF"
+        UpgradeToggleButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+    end
+end)
+
+-- Add a description label
+local UpgradeDesc = Instance.new("TextLabel")
+UpgradeDesc.Size = UDim2.new(1, -10, 0, 40)
+UpgradeDesc.Position = UDim2.new(0, 5, 0.5, 30)
+UpgradeDesc.BackgroundTransparency = 1
+UpgradeDesc.Text = "Automatically upgrade your plot if you have enough money"
+UpgradeDesc.TextColor3 = Color3.fromRGB(200, 200, 200)
+UpgradeDesc.Font = Enum.Font.Gotham
+UpgradeDesc.TextSize = 10
+UpgradeDesc.TextWrapped = true
+UpgradeDesc.TextYAlignment = Enum.TextYAlignment.Top
+UpgradeDesc.Parent = UpgradeScroll
+
+-- Canvas Sizing
+local function autoSize(layout, scroll)
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        scroll.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 10)
+    end)
+end
+
+autoSize(EggsListLayout, EggsScroll)
+autoSize(FoodsListLayout, FoodsScroll)
+autoSize(UpgradeListLayout, UpgradeScroll)
+
+-- Initialize tabs to show Eggs tab first
+switchToTab("Eggs")
