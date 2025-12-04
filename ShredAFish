@@ -1,209 +1,220 @@
+local LMG2L = {};
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
----------------------------------------------------------------------
--- MAIN GUI HOLDER
----------------------------------------------------------------------
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "PlayerSlapperGUI"
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+-- UI Creation
+LMG2L["ScreenGui_1"] = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+LMG2L["ScreenGui_1"].ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+LMG2L["Frame_2"] = Instance.new("Frame", LMG2L["ScreenGui_1"])
+LMG2L["Frame_2"].BorderSizePixel = 0
+LMG2L["Frame_2"].BackgroundColor3 = Color3.fromRGB(179,179,179)
+LMG2L["Frame_2"].Size = UDim2.new(0,180,0,160)
+LMG2L["Frame_2"].Position = UDim2.new(0,270,0,40)
+
+LMG2L["TextLabel_3"] = Instance.new("TextLabel", LMG2L["Frame_2"])
+LMG2L["TextLabel_3"].BorderSizePixel = 0
+LMG2L["TextLabel_3"].TextSize = 18
+LMG2L["TextLabel_3"].BackgroundColor3 = Color3.fromRGB(123,123,123)
+LMG2L["TextLabel_3"].FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json")
+LMG2L["TextLabel_3"].Size = UDim2.new(0,152,0,34)
+LMG2L["TextLabel_3"].Text = "DUMINIKGG"
+LMG2L["TextLabel_3"].Position = UDim2.new(0,14,0,2)
+
+Instance.new("UICorner", LMG2L["TextLabel_3"])
+Instance.new("UIStroke", LMG2L["Frame_2"])
+Instance.new("UICorner", LMG2L["Frame_2"])
+
+-- Remove the username textbox since we don't need it for waypoints
+LMG2L["TextBox_7"] = Instance.new("TextBox", LMG2L["Frame_2"])
+LMG2L["TextBox_7"].BorderSizePixel = 0
+LMG2L["TextBox_7"].TextSize = 14
+LMG2L["TextBox_7"].BackgroundColor3 = Color3.fromRGB(255,255,255)
+LMG2L["TextBox_7"].FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json")
+LMG2L["TextBox_7"].Size = UDim2.new(0,140,0,24)
+LMG2L["TextBox_7"].Position = UDim2.new(0,20,0,40)
+LMG2L["TextBox_7"].Text = "ENTER USERNAME"
+LMG2L["TextBox_7"].PlaceholderText = "ENTER USERNAME"
+
+Instance.new("UICorner", LMG2L["TextBox_7"])
+
+-- AUTO SLAP BUTTON
+LMG2L["TextButton_9"] = Instance.new("TextButton", LMG2L["Frame_2"])
+LMG2L["TextButton_9"].BorderSizePixel = 0
+LMG2L["TextButton_9"].TextSize = 12
+LMG2L["TextButton_9"].BackgroundColor3 = Color3.fromRGB(186,0,0)
+LMG2L["TextButton_9"].FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json")
+LMG2L["TextButton_9"].Size = UDim2.new(0,100,0,26)
+LMG2L["TextButton_9"].Text = "AUTO SLAP : OFF"
+LMG2L["TextButton_9"].Position = UDim2.new(0,38,0,68)
+
+Instance.new("UICorner", LMG2L["TextButton_9"])
+
+-- SAVE WAYPOINT BUTTON
+LMG2L["TextButton_d"] = Instance.new("TextButton", LMG2L["Frame_2"])
+LMG2L["TextButton_d"].BorderSizePixel = 0
+LMG2L["TextButton_d"].TextSize = 12
+LMG2L["TextButton_d"].TextColor3 = Color3.fromRGB(255,255,255)
+LMG2L["TextButton_d"].BackgroundColor3 = Color3.fromRGB(0,0,0)
+LMG2L["TextButton_d"].FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json")
+LMG2L["TextButton_d"].Size = UDim2.new(0,100,0,26)
+LMG2L["TextButton_d"].Text = "SAVE WAYPOINT"
+LMG2L["TextButton_d"].Position = UDim2.new(0,38,0,98)
+
+Instance.new("UICorner", LMG2L["TextButton_d"])
+
+-- TELEPORT TO WAYPOINT BUTTON
+LMG2L["TextButton_b"] = Instance.new("TextButton", LMG2L["Frame_2"])
+LMG2L["TextButton_b"].BorderSizePixel = 0
+LMG2L["TextButton_b"].TextSize = 12
+LMG2L["TextButton_b"].TextColor3 = Color3.fromRGB(255,255,255)
+LMG2L["TextButton_b"].BackgroundColor3 = Color3.fromRGB(0,0,0)
+LMG2L["TextButton_b"].FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json")
+LMG2L["TextButton_b"].Size = UDim2.new(0,100,0,26)
+LMG2L["TextButton_b"].Text = "TELEPORT"
+LMG2L["TextButton_b"].Position = UDim2.new(0,38,0,128)
+
+Instance.new("UICorner", LMG2L["TextButton_b"])
+
+Instance.new("UIDragDetector", LMG2L["Frame_2"])
 
 ---------------------------------------------------------------------
--- AUTO SLAPPER FRAME
+-- WAYPOINT SYSTEM
 ---------------------------------------------------------------------
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 230, 0, 200)
-MainFrame.Position = UDim2.new(0.5, -115, 0.2, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-MainFrame.BorderSizePixel = 0
-MainFrame.Parent = ScreenGui
-MainFrame.Visible = true
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+local savedWaypoint = nil
+local waypointName = "Waypoint"
+
+-- SAVE WAYPOINT FUNCTION
+_G.saveWaypointFunc = function()
+    local character = LocalPlayer.Character
+    if not character then
+        warn("No character found!")
+        return
+    end
+    
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then
+        warn("No HumanoidRootPart found!")
+        return
+    end
+    
+    -- Get optional name from textbox
+    local nameInput = LMG2L["TextBox_7"].Text
+    if nameInput ~= "" and nameInput ~= "WAYPOINT NAME" then
+        waypointName = nameInput
+    end
+    
+    -- Save the position and orientation
+    savedWaypoint = humanoidRootPart.CFrame
+    
+    -- Visual feedback
+    LMG2L["TextButton_d"].Text = "SAVED!"
+    LMG2L["TextButton_d"].BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    
+    print("Waypoint '" .. waypointName .. "' saved at position: " .. tostring(savedWaypoint.Position))
+    
+    -- Reset button after 1 second
+    task.wait(1)
+    LMG2L["TextButton_d"].Text = "SAVE WAYPOINT"
+    LMG2L["TextButton_d"].BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+end
+
+-- TELEPORT TO SAVED WAYPOINT FUNCTION
+_G.teleportFunc = function()
+    if not savedWaypoint then
+        warn("No waypoint saved! Use SAVE WAYPOINT first.")
+        return
+    end
+    
+    local character = LocalPlayer.Character
+    if not character then
+        warn("No character found!")
+        return
+    end
+    
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then
+        warn("No HumanoidRootPart found!")
+        return
+    end
+    
+    -- Visual feedback
+    LMG2L["TextButton_b"].Text = "TELEPORTING..."
+    LMG2L["TextButton_b"].BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    
+    -- Teleport to saved waypoint
+    humanoidRootPart.CFrame = savedWaypoint
+    
+    print("Teleported to waypoint: " .. waypointName)
+    
+    -- Reset button after 1 second
+    task.wait(1)
+    LMG2L["TextButton_b"].Text = "TELEPORT"
+    LMG2L["TextButton_b"].BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+end
 
 ---------------------------------------------------------------------
--- TITLE
----------------------------------------------------------------------
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 35)
-Title.BackgroundColor3 = Color3.fromRGB(30,30,30)
-Title.Text = "AutoSlapper-duminik.gg"
-Title.TextColor3 = Color3.new(1,1,1)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 16
-Title.Parent = MainFrame
-Instance.new("UICorner", Title)
-
----------------------------------------------------------------------
--- INPUT FRAME + TEXTBOX
----------------------------------------------------------------------
-local InputFrame = Instance.new("Frame")
-InputFrame.Size = UDim2.new(0.9, 0, 0, 35)
-InputFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
-InputFrame.BackgroundColor3 = Color3.fromRGB(50,50,50)
-InputFrame.BorderSizePixel = 0
-InputFrame.Parent = MainFrame
-Instance.new("UICorner", InputFrame)
-
-local PlayerTextBox = Instance.new("TextBox")
-PlayerTextBox.Size = UDim2.new(1,0,1,0)
-PlayerTextBox.BackgroundTransparency = 1
-PlayerTextBox.PlaceholderText = "enter player username"
-PlayerTextBox.Text = ""
-PlayerTextBox.Font = Enum.Font.Gotham
-PlayerTextBox.TextSize = 14
-PlayerTextBox.TextColor3 = Color3.new(1,1,1)
-PlayerTextBox.Parent = InputFrame
-
----------------------------------------------------------------------
--- BUTTONS
----------------------------------------------------------------------
-local StartBtn = Instance.new("TextButton")
-StartBtn.Size = UDim2.new(0.9,0,0,40)
-StartBtn.Position = UDim2.new(0.05,0,0.48,0)
-StartBtn.BackgroundColor3 = Color3.fromRGB(0,100,255)
-StartBtn.Text = "🎯 START LOOP"
-StartBtn.Font = Enum.Font.GothamBold
-StartBtn.TextSize = 15
-StartBtn.Parent = MainFrame
-Instance.new("UICorner", StartBtn)
-
-local StopBtn = Instance.new("TextButton")
-StopBtn.Size = UDim2.new(0.9,0,0,35)
-StopBtn.Position = UDim2.new(0.05,0,0.72,0)
-StopBtn.BackgroundColor3 = Color3.fromRGB(255,50,50)
-StopBtn.Text = "🛑 STOP"
-StopBtn.Font = Enum.Font.Gotham
-StopBtn.TextSize = 14
-StopBtn.Parent = MainFrame
-StopBtn.Visible = false
-Instance.new("UICorner", StopBtn)
-
----------------------------------------------------------------------
--- STATUS LABEL
----------------------------------------------------------------------
-local Status = Instance.new("TextLabel")
-Status.Size = UDim2.new(1,-10,0,20)
-Status.Position = UDim2.new(0,5,0.88,0)
-Status.BackgroundTransparency = 1
-Status.TextColor3 = Color3.new(1,1,1)
-Status.Text = "Ready."
-Status.Font = Enum.Font.Gotham
-Status.TextSize = 12
-Status.Parent = MainFrame
-
----------------------------------------------------------------------
--- AUTO SLAPPER LOGIC (YOUR ORIGINAL LOGIC)
+-- AUTO SLAP LOGIC (CLEAN, NO TITLE CHANGES)
 ---------------------------------------------------------------------
 local isLooping = false
 local loopThread = nil
 
-local function splitAndTrim(input)
-    local terms = {}
-    for term in input:gmatch("[^,]+") do
-        local t = term:gsub("^%s*(.-)%s*$", "%1")
-        if t ~= "" then table.insert(terms, t:lower()) end
-    end
-    return terms
-end
+local function findPlayersByPartial(text)
+    local results = {}
+    text = text:lower()
 
-local function findPlayersByPartial(input)
-    local terms = splitAndTrim(input)
-    local found = {}
-    if #terms == 0 then return found end
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer then
-            local name = plr.Name:lower()
-            for _, t in ipairs(terms) do
-                if name:find(t, 1, true) then
-                    table.insert(found, plr)
-                    break
-                end
-            end
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Name:lower():find(text) then
+            table.insert(results, plr)
         end
     end
-    return found
+
+    return results
 end
 
-local function findSlapperAndRemote()
-    local function findIn(container)
-        if not container then return nil end
+local function findSlapperRemote()
+    local char = LocalPlayer.Character
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+
+    local function scan(container)
+        if not container then return end
         local tool = container:FindFirstChild("Default Slapper")
         if tool then
-            for _, descendant in ipairs(tool:GetDescendants()) do
-                if descendant:IsA("RemoteEvent") then
-                    return tool, descendant
+            for _, d in ipairs(tool:GetDescendants()) do
+                if d:IsA("RemoteEvent") then
+                    return tool, d
                 end
             end
-            return tool, nil
         end
-        return nil
     end
 
-    local backpack = LocalPlayer:FindFirstChild("Backpack")
-    local char = LocalPlayer.Character
-    local tool, remote = findIn(backpack)
+    local tool, remote = scan(backpack)
     if tool then return tool, remote end
 
-    tool, remote = findIn(char)
-    if tool then return tool, remote end
-
-    return nil, nil
+    tool, remote = scan(char)
+    return tool, remote
 end
 
-local function slapPlayer(targetPlayer)
-    if not targetPlayer or not targetPlayer.Character then
-        return false, "no_character"
-    end
-
-    local tool, remote = findSlapperAndRemote()
-    if not tool then
-        return false, "no_tool"
-    end
-
-    if not remote then
-        for _, desc in ipairs(tool:GetDescendants()) do
-            if desc:IsA("RemoteEvent") then
-                remote = desc
-                break
-            end
-        end
-    end
-
-    if not remote then
-        return false, "no_remote"
-    end
-
-    local success, err = pcall(function()
-        remote:FireServer(targetPlayer.Character)
+local function slapPlayer(plr)
+    if not plr.Character then return end
+    local tool, remote = findSlapperRemote()
+    if not tool or not remote then return end
+    pcall(function()
+        remote:FireServer(plr.Character)
     end)
-    if not success then
-        return false, "fire_error: "..tostring(err)
-    end
-
-    return true
 end
 
 local function startLoop()
     if isLooping then return end
 
-    local input = PlayerTextBox.Text or ""
-    if input:match("^%s*$") then
-        Status.Text = "❌ Enter player name(s)."
-        return
-    end
-
-    local targets = findPlayersByPartial(input)
-    if #targets == 0 then
-        Status.Text = "❌ No players found."
-        return
-    end
+    local name = LMG2L["TextBox_7"].Text
+    local targets = findPlayersByPartial(name)
+    if #targets == 0 then return end
 
     isLooping = true
-    StartBtn.Visible = false
-    StopBtn.Visible = true
-    Status.Text = "🔁 Loop started ("..#targets.." target(s))"
+    LMG2L["TextButton_9"].Text = "AUTO SLAP : ON"
+    LMG2L["TextButton_9"].BackgroundColor3 = Color3.fromRGB(0,150,0)
 
     loopThread = task.spawn(function()
         while isLooping do
@@ -217,299 +228,23 @@ end
 
 local function stopLoop()
     isLooping = false
-    StartBtn.Visible = true
-    StopBtn.Visible = false
-    Status.Text = "Stopped."
-end
-
-StartBtn.MouseButton1Click:Connect(startLoop)
-StopBtn.MouseButton1Click:Connect(stopLoop)
-
-if UserInputService.TouchEnabled then
-    StartBtn.TouchTap:Connect(startLoop)
-    StopBtn.TouchTap:Connect(stopLoop)
+    LMG2L["TextButton_9"].Text = "AUTO SLAP : OFF"
+    LMG2L["TextButton_9"].BackgroundColor3 = Color3.fromRGB(186,0,0)
 end
 
 ---------------------------------------------------------------------
--- DRAGGABLE GUI
+-- BUTTON BINDINGS
 ---------------------------------------------------------------------
-local dragging, dragStart, startPos
-MainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
+LMG2L["TextButton_9"].MouseButton1Click:Connect(function()
+    if isLooping then stopLoop() else startLoop() end
 end)
 
-MainFrame.InputChanged:Connect(function(input)
-    if dragging and input.Position then
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(
-            startPos.X.Scale,
-            startPos.X.Offset + delta.X,
-            startPos.Y.Scale,
-            startPos.Y.Offset + delta.Y
-        )
-    end
+LMG2L["TextButton_d"].MouseButton1Click:Connect(function()
+    _G.saveWaypointFunc()
 end)
 
-Status.Text = "Ready."
-
----------------------------------------------------------------------
--- WAYPOINT SYSTEM (ADDED AT THE END)
----------------------------------------------------------------------
-local waypoints = {}
-local selectedWaypoint = nil
-
--- Add Waypoint button to main GUI - ALL 3 BUTTONS NOW HAVE SAME SIZE
-local WaypointBtn = Instance.new("TextButton")
-WaypointBtn.Size = UDim2.new(0.9, 0, 0, 25)
-WaypointBtn.Position = UDim2.new(0.05, 0, 0.88, 0)
-WaypointBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-WaypointBtn.Text = "📍 Save Waypoint"
-WaypointBtn.Font = Enum.Font.Gotham
-WaypointBtn.TextSize = 12
-WaypointBtn.Parent = MainFrame
-Instance.new("UICorner", WaypointBtn)
-
-local TeleportBtn = Instance.new("TextButton")
-TeleportBtn.Size = UDim2.new(0.9, 0, 0, 25)
-TeleportBtn.Position = UDim2.new(0.05, 0, 0.72, 0)
-TeleportBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 255)
-TeleportBtn.Text = "🚀 Teleport to WP"
-TeleportBtn.Font = Enum.Font.Gotham
-TeleportBtn.TextSize = 12
-TeleportBtn.Parent = MainFrame
-Instance.new("UICorner", TeleportBtn)
-
--- Adjust Stop button position to match size
-StopBtn.Size = UDim2.new(0.9, 0, 0, 25)
-StopBtn.Position = UDim2.new(0.05, 0, 0.60, 0)
-
--- Adjust Start button position
-StartBtn.Position = UDim2.new(0.05, 0, 0.48, 0)
-
--- Waypoint List GUI (hidden by default)
-local WaypointFrame = Instance.new("Frame")
-WaypointFrame.Size = UDim2.new(0, 200, 0, 200)
-WaypointFrame.Position = UDim2.new(0.5, -100, 0.5, 0)
-WaypointFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-WaypointFrame.BorderSizePixel = 0
-WaypointFrame.Parent = ScreenGui
-WaypointFrame.Visible = false
-Instance.new("UICorner", WaypointFrame).CornerRadius = UDim.new(0, 10)
-
-local WaypointTitle = Instance.new("TextLabel")
-WaypointTitle.Size = UDim2.new(1, 0, 0, 35)
-WaypointTitle.BackgroundColor3 = Color3.fromRGB(30,30,30)
-WaypointTitle.Text = "Saved Waypoints"
-WaypointTitle.TextColor3 = Color3.new(1,1,1)
-WaypointTitle.Font = Enum.Font.GothamBold
-WaypointTitle.TextSize = 16
-WaypointTitle.Parent = WaypointFrame
-Instance.new("UICorner", WaypointTitle)
-
-local WaypointList = Instance.new("ScrollingFrame")
-WaypointList.Size = UDim2.new(0.9, 0, 0, 120)
-WaypointList.Position = UDim2.new(0.05, 0, 0.2, 0)
-WaypointList.BackgroundColor3 = Color3.fromRGB(50,50,50)
-WaypointList.BorderSizePixel = 0
-WaypointList.Parent = WaypointFrame
-WaypointList.CanvasSize = UDim2.new(0, 0, 0, 0)
-WaypointList.ScrollBarThickness = 5
-Instance.new("UICorner", WaypointList)
-
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0.9, 0, 0, 25)
-CloseBtn.Position = UDim2.new(0.05, 0, 0.85, 0)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-CloseBtn.Text = "Close"
-CloseBtn.Font = Enum.Font.Gotham
-CloseBtn.TextSize = 13
-CloseBtn.Parent = WaypointFrame
-Instance.new("UICorner", CloseBtn)
-
--- Make waypoint frame draggable
-WaypointFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = WaypointFrame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
+LMG2L["TextButton_b"].MouseButton1Click:Connect(function()
+    _G.teleportFunc()
 end)
 
-WaypointFrame.InputChanged:Connect(function(input)
-    if dragging and input.Position then
-        local delta = input.Position - dragStart
-        WaypointFrame.Position = UDim2.new(
-            startPos.X.Scale,
-            startPos.X.Offset + delta.X,
-            startPos.Y.Scale,
-            startPos.Y.Offset + delta.Y
-        )
-    end
-end)
-
-local function updateWaypointList()
-    WaypointList:ClearAllChildren()
-    local yOffset = 5
-    
-    for name, data in pairs(waypoints) do
-        local waypointFrame = Instance.new("Frame")
-        waypointFrame.Size = UDim2.new(1, -10, 0, 30)
-        waypointFrame.Position = UDim2.new(0, 5, 0, yOffset)
-        waypointFrame.BackgroundColor3 = selectedWaypoint == name and Color3.fromRGB(70,70,120) or Color3.fromRGB(60,60,60)
-        waypointFrame.Parent = WaypointList
-        
-        local nameLabel = Instance.new("TextLabel")
-        nameLabel.Size = UDim2.new(0.8, 0, 1, 0)
-        nameLabel.BackgroundTransparency = 1
-        nameLabel.Text = name
-        nameLabel.TextColor3 = Color3.new(1,1,1)
-        nameLabel.Font = Enum.Font.Gotham
-        nameLabel.TextSize = 12
-        nameLabel.TextXAlignment = Enum.TextXAlignment.Left
-        nameLabel.Parent = waypointFrame
-        
-        local selectBtn = Instance.new("TextButton")
-        selectBtn.Size = UDim2.new(0.2, 0, 0.7, 0)
-        selectBtn.Position = UDim2.new(0.8, 0, 0.15, 0)
-        selectBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 255)
-        selectBtn.Text = "✔"
-        selectBtn.Font = Enum.Font.GothamBold
-        selectBtn.TextSize = 12
-        selectBtn.Parent = waypointFrame
-        Instance.new("UICorner", selectBtn)
-        
-        selectBtn.MouseButton1Click:Connect(function()
-            selectedWaypoint = name
-            Status.Text = "Selected: " .. name
-            updateWaypointList()
-        end)
-        
-        if UserInputService.TouchEnabled then
-            selectBtn.TouchTap:Connect(function()
-                selectedWaypoint = name
-                Status.Text = "Selected: " .. name
-                updateWaypointList()
-            end)
-        end
-        
-        yOffset = yOffset + 35
-    end
-    
-    WaypointList.CanvasSize = UDim2.new(0, 0, 0, yOffset)
-end
-
-local function saveCurrentWaypoint()
-    local char = LocalPlayer.Character
-    if not char then 
-        Status.Text = "❌ No character"
-        return 
-    end
-    
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then 
-        Status.Text = "❌ No HRP"
-        return 
-    end
-    
-    -- Generate waypoint name
-    local wpName = "WP" .. (#waypoints + 1)
-    waypoints[wpName] = {
-        Position = hrp.Position,
-        CFrame = hrp.CFrame,
-        Timestamp = os.time()
-    }
-    
-    selectedWaypoint = wpName
-    Status.Text = "✅ Saved: " .. wpName
-    -- Waypoint list does NOT show automatically
-end
-
-local function teleportToSelected()
-    if not selectedWaypoint or not waypoints[selectedWaypoint] then
-        Status.Text = "❌ No waypoint saved"
-        return
-    end
-    
-    local char = LocalPlayer.Character
-    if not char then 
-        Status.Text = "❌ No character"
-        return 
-    end
-    
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then 
-        Status.Text = "❌ No HRP"
-        return 
-    end
-    
-    local humanoid = char:FindFirstChild("Humanoid")
-    if not humanoid then 
-        Status.Text = "❌ No humanoid"
-        return 
-    end
-    
-    -- Teleport
-    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-    task.wait(0.05)
-    hrp.CFrame = waypoints[selectedWaypoint].CFrame + Vector3.new(0, 3, 0)
-    task.wait(0.05)
-    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-    
-    Status.Text = "✅ Teleported to: " .. selectedWaypoint
-end
-
--- Add a button to show waypoint list (optional)
-local ShowListBtn = Instance.new("TextButton")
-ShowListBtn.Size = UDim2.new(0.4, 0, 0, 20)
-ShowListBtn.Position = UDim2.new(0.3, 0, 0.95, 0)
-ShowListBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-ShowListBtn.Text = "📋 List"
-ShowListBtn.Font = Enum.Font.Gotham
-ShowListBtn.TextSize = 11
-ShowListBtn.Parent = MainFrame
-Instance.new("UICorner", ShowListBtn)
-
-ShowListBtn.MouseButton1Click:Connect(function()
-    WaypointFrame.Visible = true
-    updateWaypointList()
-end)
-
--- Button connections
-WaypointBtn.MouseButton1Click:Connect(function()
-    saveCurrentWaypoint()
-end)
-
-TeleportBtn.MouseButton1Click:Connect(function()
-    teleportToSelected()
-end)
-
-CloseBtn.MouseButton1Click:Connect(function()
-    WaypointFrame.Visible = false
-end)
-
--- Touch support for mobile
-if UserInputService.TouchEnabled then
-    WaypointBtn.TouchTap:Connect(saveCurrentWaypoint)
-    TeleportBtn.TouchTap:Connect(teleportToSelected)
-    CloseBtn.TouchTap:Connect(function()
-        WaypointFrame.Visible = false
-    end)
-    ShowListBtn.TouchTap:Connect(function()
-        WaypointFrame.Visible = true
-        updateWaypointList()
-    end)
-end
+return LMG2L["ScreenGui_1"]
