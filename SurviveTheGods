@@ -1,151 +1,167 @@
-local LMG2L = {};
-
-LMG2L["ScreenGui_1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
-LMG2L["ScreenGui_1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
-
-LMG2L["Frame_2"] = Instance.new("Frame", LMG2L["ScreenGui_1"]);
-LMG2L["Frame_2"]["BorderSizePixel"] = 0;
-LMG2L["Frame_2"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
-LMG2L["Frame_2"]["Size"] = UDim2.new(0, 200, 0, 126);
-LMG2L["Frame_2"]["Position"] = UDim2.new(0, 248, 0, 50);
-
-Instance.new("UICorner", LMG2L["Frame_2"])
-Instance.new("UIStroke", LMG2L["Frame_2"])
-
-LMG2L["TextButton_5"] = Instance.new("TextButton", LMG2L["Frame_2"]);
-LMG2L["TextButton_5"].BorderSizePixel = 0
-LMG2L["TextButton_5"].TextSize = 14
-LMG2L["TextButton_5"].BackgroundColor3 = Color3.fromRGB(231, 74, 255)
-LMG2L["TextButton_5"].FontFace = Font.new([[rbxasset://fonts/families/Inconsolata.json]])
-LMG2L["TextButton_5"].Size = UDim2.new(0, 174, 0, 36)
-LMG2L["TextButton_5"].Text = "TELEPORT"
-LMG2L["TextButton_5"].Position = UDim2.new(0, 12, 0, 32)
-Instance.new("UICorner", LMG2L["TextButton_5"])
-
-LMG2L["TextButton_7"] = Instance.new("TextButton", LMG2L["TextButton_5"]);
-LMG2L["TextButton_7"].BorderSizePixel = 0
-LMG2L["TextButton_7"].TextSize = 14
-LMG2L["TextButton_7"].BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-LMG2L["TextButton_7"].FontFace = Font.new([[rbxasset://fonts/families/Inconsolata.json]])
-LMG2L["TextButton_7"].Size = UDim2.new(0, 174, 0, 36)
-LMG2L["TextButton_7"].Text = "ESP : OFF"
-LMG2L["TextButton_7"].Position = UDim2.new(0, 0, 0, 46)
-Instance.new("UICorner", LMG2L["TextButton_7"])
-
-LMG2L["TextBox_9"] = Instance.new("TextBox", LMG2L["Frame_2"]);
-LMG2L["TextBox_9"].BorderSizePixel = 0
-LMG2L["TextBox_9"].TextSize = 14
-LMG2L["TextBox_9"].BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-LMG2L["TextBox_9"].FontFace = Font.new([[rbxasset://fonts/families/Inconsolata.json]])
-LMG2L["TextBox_9"].Size = UDim2.new(0, 188, 0, 18)
-LMG2L["TextBox_9"].Position = UDim2.new(0, 6, 0, 4)
-LMG2L["TextBox_9"].Text = "DUMINIKGG"
-Instance.new("UICorner", LMG2L["TextBox_9"])
-
-Instance.new("UIDragDetector", LMG2L["Frame_2"])
-
--------------------------------------------------------
--- TELEPORT LOGIC
--------------------------------------------------------
-
-local teleportPos = Vector3.new(-74, 7, -2187)
-
-LMG2L["TextButton_5"].MouseButton1Click:Connect(function()
-    local p = game.Players.LocalPlayer
-    local char = p.Character or p.CharacterAdded:Wait()
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-
-    if hrp then
-        hrp.CFrame = CFrame.new(teleportPos)
-    end
-end)
-
--------------------------------------------------------
--- ESP SYSTEM
--------------------------------------------------------
-
-local RunService = game:GetService("RunService")
+-- AUTO RELOAD ON RESPAWN
 local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-local ESP_ENABLED = false
-local ESP_TRACK = {}
+-- Function that builds the entire GUI + features
+local function LoadScript()
 
-local function createESP(player)
-    if player == Players.LocalPlayer then return end
-    if ESP_TRACK[player] then return end
+    -- Remove old GUI to avoid duplicates
+    local old = LocalPlayer.PlayerGui:FindFirstChild("ScreenGui_1")
+    if old then old:Destroy() end
 
-    local box = Instance.new("Highlight")
-    box.FillTransparency = 1
-    box.OutlineColor = Color3.fromRGB(255, 0, 0)
-    box.Parent = player.Character or player.CharacterAdded:Wait()
+    local LMG2L = {};
 
-    ESP_TRACK[player] = box
+    LMG2L["ScreenGui_1"] = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"));
+    LMG2L["ScreenGui_1"].Name = "ScreenGui_1"
+    LMG2L["ScreenGui_1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
 
-    player.CharacterAdded:Connect(function(char)
-        box.Parent = char
-    end)
-end
+    LMG2L["Frame_2"] = Instance.new("Frame", LMG2L["ScreenGui_1"]);
+    LMG2L["Frame_2"]["BorderSizePixel"] = 0;
+    LMG2L["Frame_2"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+    LMG2L["Frame_2"]["Size"] = UDim2.new(0, 200, 0, 126);
+    LMG2L["Frame_2"]["Position"] = UDim2.new(0, 248, 0, 50);
 
-local function removeESP()
-    for plr, box in pairs(ESP_TRACK) do
-        box:Destroy()
-    end
-    ESP_TRACK = {}
-end
+    Instance.new("UICorner", LMG2L["Frame_2"])
+    Instance.new("UIStroke", LMG2L["Frame_2"])
 
-local function enableESP()
-    for _, player in pairs(Players:GetPlayers()) do
-        createESP(player)
-    end
-    
-    Players.PlayerAdded:Connect(function(player)
-        if ESP_ENABLED then
-            createESP(player)
+    LMG2L["TextButton_5"] = Instance.new("TextButton", LMG2L["Frame_2"]);
+    LMG2L["TextButton_5"].BorderSizePixel = 0
+    LMG2L["TextButton_5"].TextSize = 14
+    LMG2L["TextButton_5"].BackgroundColor3 = Color3.fromRGB(231, 74, 255)
+    LMG2L["TextButton_5"].FontFace = Font.new([[rbxasset://fonts/families/Inconsolata.json]])
+    LMG2L["TextButton_5"].Size = UDim2.new(0, 174, 0, 36)
+    LMG2L["TextButton_5"].Text = "TELEPORT"
+    LMG2L["TextButton_5"].Position = UDim2.new(0, 12, 0, 32)
+    Instance.new("UICorner", LMG2L["TextButton_5"])
+
+    LMG2L["TextButton_7"] = Instance.new("TextButton", LMG2L["TextButton_5"]);
+    LMG2L["TextButton_7"].BorderSizePixel = 0
+    LMG2L["TextButton_7"].TextSize = 14
+    LMG2L["TextButton_7"].BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    LMG2L["TextButton_7"].FontFace = Font.new([[rbxasset://fonts/families/Inconsolata.json]])
+    LMG2L["TextButton_7"].Size = UDim2.new(0, 174, 0, 36)
+    LMG2L["TextButton_7"].Text = "ESP : OFF"
+    LMG2L["TextButton_7"].Position = UDim2.new(0, 0, 0, 46)
+    Instance.new("UICorner", LMG2L["TextButton_7"])
+
+    LMG2L["TextBox_9"] = Instance.new("TextBox", LMG2L["Frame_2"]);
+    LMG2L["TextBox_9"].BorderSizePixel = 0
+    LMG2L["TextBox_9"].TextSize = 14
+    LMG2L["TextBox_9"].BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    LMG2L["TextBox_9"].FontFace = Font.new([[rbxasset://fonts/families/Inconsolata.json]])
+    LMG2L["TextBox_9"].Size = UDim2.new(0, 188, 0, 18)
+    LMG2L["TextBox_9"].Position = UDim2.new(0, 6, 0, 4)
+    LMG2L["TextBox_9"].Text = "DUMINIKGG"
+    Instance.new("UICorner", LMG2L["TextBox_9"])
+
+    Instance.new("UIDragDetector", LMG2L["Frame_2"])
+
+    -------------------------------------------------------
+    -- TELEPORT LOGIC
+    -------------------------------------------------------
+
+    local teleportPos = Vector3.new(-74, 7, -2187)
+
+    LMG2L["TextButton_5"].MouseButton1Click:Connect(function()
+        local p = LocalPlayer
+        local char = p.Character or p.CharacterAdded:Wait()
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+
+        if hrp then
+            hrp.CFrame = CFrame.new(teleportPos)
         end
     end)
-end
 
-LMG2L["TextButton_7"].MouseButton1Click:Connect(function()
-    ESP_ENABLED = not ESP_ENABLED
+    -------------------------------------------------------
+    -- ESP SYSTEM
+    -------------------------------------------------------
 
-    if ESP_ENABLED then
-        LMG2L["TextButton_7"].Text = "ESP : ON"
-        LMG2L["TextButton_7"].BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        enableESP()
-    else
-        LMG2L["TextButton_7"].Text = "ESP : OFF"
-        LMG2L["TextButton_7"].BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        removeESP()
+    local RunService = game:GetService("RunService")
+    local Players = game:GetService("Players")
+
+    local ESP_ENABLED = false
+    local ESP_TRACK = {}
+
+    local function createESP(player)
+        if player == Players.LocalPlayer then return end
+        if ESP_TRACK[player] then return end
+
+        local box = Instance.new("Highlight")
+        box.FillTransparency = 1
+        box.OutlineColor = Color3.fromRGB(255, 0, 0)
+        box.Parent = player.Character or player.CharacterAdded:Wait()
+
+        ESP_TRACK[player] = box
+
+        player.CharacterAdded:Connect(function(char)
+            box.Parent = char
+        end)
     end
-end)
 
--------------------------------------------------------
--- AUTO NOCLIP (Always ON)
--------------------------------------------------------
+    local function removeESP()
+        for plr, box in pairs(ESP_TRACK) do
+            box:Destroy()
+        end
+        ESP_TRACK = {}
+    end
 
-local localPlayer = Players.LocalPlayer
+    local function enableESP()
+        for _, player in pairs(Players:GetPlayers()) do
+            createESP(player)
+        end
+        
+        Players.PlayerAdded:Connect(function(player)
+            if ESP_ENABLED then
+                createESP(player)
+            end
+        end)
+    end
 
-RunService.Stepped:Connect(function()
-    local char = localPlayer.Character
-    if char then
-        for _, part in ipairs(char:GetChildren()) do
+    LMG2L["TextButton_7"].MouseButton1Click:Connect(function()
+        ESP_ENABLED = not ESP_ENABLED
+
+        if ESP_ENABLED then
+            LMG2L["TextButton_7"].Text = "ESP : ON"
+            LMG2L["TextButton_7"].BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+            enableESP()
+        else
+            LMG2L["TextButton_7"].Text = "ESP : OFF"
+            LMG2L["TextButton_7"].BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+            removeESP()
+        end
+    end)
+
+    -------------------------------------------------------
+    -- AUTO NOCLIP (Always ON)
+    -------------------------------------------------------
+
+    RunService.Stepped:Connect(function()
+        local char = LocalPlayer.Character
+        if char then
+            for _, part in ipairs(char:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+        end
+    end)
+
+    LocalPlayer.CharacterAdded:Connect(function(character)
+        character:WaitForChild("HumanoidRootPart")
+        task.wait(0.2)
+        for _, part in ipairs(character:GetChildren()) do
             if part:IsA("BasePart") then
                 part.CanCollide = false
             end
         end
-    end
+    end)
+end
+
+-- RUN SCRIPT NOW
+LoadScript()
+
+-- AUTO RUN ON RESPAWN
+LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(0.5)
+    LoadScript()
 end)
-
-localPlayer.CharacterAdded:Connect(function(character)
-    character:WaitForChild("HumanoidRootPart")
-    task.wait(0.2)
-    for _, part in ipairs(character:GetChildren()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = false
-        end
-    end
-end)
-
--------------------------------------------------------
-
-return LMG2L["ScreenGui_1"], require;
