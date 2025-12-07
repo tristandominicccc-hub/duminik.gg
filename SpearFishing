@@ -1,0 +1,275 @@
+local LMG2L = {};
+local player = game:GetService("Players").LocalPlayer
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+LMG2L["ScreenGui_1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
+LMG2L["ScreenGui_1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
+LMG2L["ScreenGui_1"]["ResetOnSpawn"] = false;
+
+
+LMG2L["Frame_2"] = Instance.new("Frame", LMG2L["ScreenGui_1"]);
+LMG2L["Frame_2"]["BorderSizePixel"] = 0;
+LMG2L["Frame_2"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["Frame_2"]["Size"] = UDim2.new(0, 200, 0, 76);
+LMG2L["Frame_2"]["Position"] = UDim2.new(0, 254, 0, 66);
+
+
+LMG2L["UICorner_3"] = Instance.new("UICorner", LMG2L["Frame_2"]);
+
+
+
+LMG2L["UIStroke_4"] = Instance.new("UIStroke", LMG2L["Frame_2"]);
+
+
+
+LMG2L["TextBox_5"] = Instance.new("TextBox", LMG2L["Frame_2"]);
+LMG2L["TextBox_5"]["BorderSizePixel"] = 0;
+LMG2L["TextBox_5"]["TextSize"] = 14;
+LMG2L["TextBox_5"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextBox_5"]["FontFace"] = Font.new([[rbxasset://fonts/families/Inconsolata.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+LMG2L["TextBox_5"]["Size"] = UDim2.new(0, 188, 0, 18);
+LMG2L["TextBox_5"]["Position"] = UDim2.new(0, 6, 0, 4);
+LMG2L["TextBox_5"]["Text"] = [[DUMINIKGG - SPEAR FISHING]];
+LMG2L["TextBox_5"]["TextEditable"] = false;
+
+
+LMG2L["UICorner_6"] = Instance.new("UICorner", LMG2L["TextBox_5"]);
+
+
+
+LMG2L["UIDragDetector_7"] = Instance.new("UIDragDetector", LMG2L["Frame_2"]);
+
+
+
+LMG2L["TextButton_8"] = Instance.new("TextButton", LMG2L["Frame_2"]);
+LMG2L["TextButton_8"]["BorderSizePixel"] = 0;
+LMG2L["TextButton_8"]["TextSize"] = 14;
+LMG2L["TextButton_8"]["BackgroundColor3"] = Color3.fromRGB(255, 0, 0);
+LMG2L["TextButton_8"]["FontFace"] = Font.new([[rbxasset://fonts/families/Inconsolata.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+LMG2L["TextButton_8"]["Size"] = UDim2.new(0, 140, 0, 38);
+LMG2L["TextButton_8"]["Text"] = [[AUTO FARM : OFF]];
+LMG2L["TextButton_8"]["Position"] = UDim2.new(0, 30, 0, 32);
+
+
+LMG2L["UICorner_9"] = Instance.new("UICorner", LMG2L["TextButton_8"]);
+
+-- Auto Farm Variables
+local autoFarm = false
+local isTweening = false
+local currentTween = nil
+local originalHumanoidState = nil
+
+-- Drag functionality for the frame
+local dragging = false
+local dragStart
+local startPosFrame
+
+local function update(input)
+    local delta = input.Position - dragStart
+    LMG2L["Frame_2"].Position = UDim2.new(
+        startPosFrame.X.Scale,
+        startPosFrame.X.Offset + delta.X,
+        startPosFrame.Y.Scale,
+        startPosFrame.Y.Offset + delta.Y
+    )
+end
+
+local function dragBegin(input)
+    dragging = true
+    dragStart = input.Position
+    startPosFrame = LMG2L["Frame_2"].Position
+end
+
+local function dragEnd(input)
+    dragging = false
+end
+
+-- Connect drag events to the frame
+LMG2L["Frame_2"].InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragBegin(input)
+    end
+end)
+
+LMG2L["Frame_2"].InputEnded:Connect(dragEnd)
+
+UIS.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch) then
+        update(input)
+    end
+end)
+
+-- Function to prevent character bugging during teleport
+local function safeTeleport(root)
+    local char = player.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then 
+        isTweening = false
+        return nil 
+    end
+    
+    local hrp = char.HumanoidRootPart
+    local humanoid = char:FindFirstChild("Humanoid")
+    
+    if not humanoid then
+        isTweening = false
+        return nil
+    end
+    
+    -- Save original humanoid state
+    originalHumanoidState = {
+        PlatformStand = humanoid.PlatformStand,
+        AutoRotate = humanoid.AutoRotate,
+        Jump = humanoid.Jump
+    }
+    
+    -- Prepare character for teleport
+    humanoid.PlatformStand = true
+    humanoid.AutoRotate = false
+    
+    -- Calculate distance and tween time
+    local distance = (root.Position - hrp.Position).Magnitude
+    local tweenTime = math.min(distance / 60, 2) -- Cap at 2 seconds max
+    
+    local tweenInfo = TweenInfo.new(
+        tweenTime,
+        Enum.EasingStyle.Linear
+    )
+    
+    -- Create and play tween
+    local tween = TweenService:Create(hrp, tweenInfo, {
+        CFrame = CFrame.new(root.Position.X, hrp.Position.Y, root.Position.Z)
+    })
+    
+    currentTween = tween
+    tween:Play()
+    
+    -- Wait for tween to complete or be interrupted
+    local completed = tween.Completed:Wait()
+    
+    -- Restore humanoid state
+    if originalHumanoidState then
+        humanoid.PlatformStand = originalHumanoidState.PlatformStand
+        humanoid.AutoRotate = originalHumanoidState.AutoRotate
+        task.wait(0.1) -- Small delay to stabilize
+    end
+    
+    isTweening = false
+    currentTween = nil
+    
+    return true
+end
+
+local function getNearestRoot()
+    local nearest
+    local minDistance = math.huge
+
+    local char = player.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
+
+    local hrp = char.HumanoidRootPart
+
+    for _, sea in ipairs(workspace.WorldSea:GetChildren()) do
+        for _, fish in ipairs(sea:GetChildren()) do
+            if fish:FindFirstChild("Model") and fish.Model:FindFirstChild("Root") then
+                local root = fish.Model.Root
+                local dist = (root.Position - hrp.Position).Magnitude
+
+                if dist < minDistance then
+                    minDistance = dist
+                    nearest = root
+                end
+            end
+        end
+    end
+
+    return nearest
+end
+
+local function findTool()
+    local char = player.Character
+    if not char then return nil end
+
+    for _, item in ipairs(char:GetChildren()) do
+        if item:IsA("Tool") then
+            return item
+        end
+    end
+
+    return nil
+end
+
+local function autoCast(root)
+    if not root then return end
+
+    local tool = findTool()
+    if not tool then return end
+
+    local args = {
+        [1] = "Fire",
+        [2] = {
+            cameraOrigin = workspace.CurrentCamera.CFrame.Position,
+            player = player,
+            toolInstance = tool,
+            destination = root.Position,
+            isCharge = false
+        }
+    }
+
+    game:GetService("ReplicatedStorage").Remotes.FireRE:FireServer(unpack(args))
+end
+
+-- Auto Farm Loop
+task.spawn(function()
+    while true do
+        if autoFarm and not isTweening then
+            local root = getNearestRoot()
+            if root then
+                isTweening = true
+                local success = safeTeleport(root)
+                if success then
+                    task.wait(0.2)
+                    autoCast(root)
+                end
+                task.wait(0.1) -- Small cooldown between actions
+            else
+                task.wait(0.5) -- Wait longer if no fish found
+            end
+        end
+        task.wait(0.03)
+    end
+end)
+
+-- Toggle Auto Farm
+LMG2L["TextButton_8"].MouseButton1Click:Connect(function()
+    autoFarm = not autoFarm
+    if autoFarm then
+        LMG2L["TextButton_8"].Text = "AUTO FARM : ON"
+        LMG2L["TextButton_8"].BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    else
+        -- Stop any ongoing tween
+        if currentTween then
+            currentTween:Cancel()
+            currentTween = nil
+        end
+        
+        -- Restore humanoid state if we were tweening
+        if isTweening then
+            local char = player.Character
+            if char and char:FindFirstChild("Humanoid") and originalHumanoidState then
+                local humanoid = char.Humanoid
+                humanoid.PlatformStand = originalHumanoidState.PlatformStand
+                humanoid.AutoRotate = originalHumanoidState.AutoRotate
+            end
+            isTweening = false
+        end
+        
+        LMG2L["TextButton_8"].Text = "AUTO FARM : OFF"
+        LMG2L["TextButton_8"].BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    end
+end)
+
+return LMG2L["ScreenGui_1"], require;
