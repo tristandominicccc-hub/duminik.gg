@@ -1,0 +1,222 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+
+local chestLocations = {
+    Vector3.new(495, 105, 23),
+    Vector3.new(549, -13, 693),
+    Vector3.new(-128, 84, 123),
+    Vector3.new(-556, 15, 448),
+    Vector3.new(-736, 57, -118),
+    Vector3.new(-944, 81, 250),
+    Vector3.new(-2486, -7, 853),
+    Vector3.new(-2970, 73, 122),
+    Vector3.new(-3260, -274, 806),
+    Vector3.new(-3095, -268, 161),
+    Vector3.new(-3785, -44, 516),
+    Vector3.new(-4239, 94, 111),
+    Vector3.new(-4186, 15, 693),
+    Vector3.new(-4510, 35, 590),
+    Vector3.new(-4904, 98, 759),
+    Vector3.new(-5131, 40, 1300),
+    Vector3.new(-3860, 20, -679),
+    Vector3.new(-4580, 57, -975),
+    Vector3.new(-4642, 63, -1155),
+    Vector3.new(-4576, 17, -1492),
+    Vector3.new(-4839, 14, -1443),
+    Vector3.new(-5188, 73, -1385),
+    Vector3.new(-4992, 84, -1066),
+    Vector3.new(-5206, 73, -843),
+    Vector3.new(-4954, 14, -488),
+    Vector3.new(-4741, 50, -651),
+    Vector3.new(-4652, 16, -651),
+    Vector3.new(-4858, 76, -727),
+    Vector3.new(-4958, 14, -759),
+    Vector3.new(-5026, 15, -1014),
+    Vector3.new(-4862, 95, -1152)
+}
+
+local currentChestIndex = 1
+
+local LMG2L = {};
+LMG2L["ScreenGui_1"] = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"));
+LMG2L["ScreenGui_1"].ResetOnSpawn = false
+LMG2L["ScreenGui_1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
+
+LMG2L["Frame_2"] = Instance.new("Frame", LMG2L["ScreenGui_1"]);
+LMG2L["Frame_2"]["BorderSizePixel"] = 0;
+LMG2L["Frame_2"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["Frame_2"]["Size"] = UDim2.new(0, 172, 0, 176);
+LMG2L["Frame_2"]["Position"] = UDim2.new(0, 268, 0, 52);
+LMG2L["Frame_2"]["BackgroundTransparency"] = 0.3
+
+LMG2L["UICorner_3"] = Instance.new("UICorner", LMG2L["Frame_2"]);
+
+LMG2L["UIStroke_4"] = Instance.new("UIStroke", LMG2L["Frame_2"]);
+LMG2L["UIStroke_4"].Color = Color3.fromRGB(80, 80, 100)
+
+LMG2L["UIDragDetector_5"] = Instance.new("UIDragDetector", LMG2L["Frame_2"]);
+
+LMG2L["TextLabel_6"] = Instance.new("TextLabel", LMG2L["Frame_2"]);
+LMG2L["TextLabel_6"]["BorderSizePixel"] = 0;
+LMG2L["TextLabel_6"]["TextSize"] = 14;
+LMG2L["TextLabel_6"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["TextLabel_6"]["FontFace"] = Font.new([[rbxasset://fonts/families/Inconsolata.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+LMG2L["TextLabel_6"]["Size"] = UDim2.new(0, 160, 0, 14);
+LMG2L["TextLabel_6"]["Text"] = [[TOTAL OF 31 GOLD CHEST]];
+LMG2L["TextLabel_6"]["Position"] = UDim2.new(0, 6, 0, 2);
+LMG2L["TextLabel_6"]["BackgroundTransparency"] = 1
+LMG2L["TextLabel_6"]["TextColor3"] = Color3.fromRGB(255, 255, 150)
+
+LMG2L["UICorner_7"] = Instance.new("UICorner", LMG2L["TextLabel_6"]);
+
+LMG2L["nextButton"] = Instance.new("TextButton", LMG2L["Frame_2"]);
+LMG2L["nextButton"]["BorderSizePixel"] = 0;
+LMG2L["nextButton"]["TextSize"] = 10;
+LMG2L["nextButton"]["BackgroundColor3"] = Color3.fromRGB(70, 70, 120);
+LMG2L["nextButton"]["FontFace"] = Font.new([[rbxasset://fonts/families/Inconsolata.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+LMG2L["nextButton"]["Size"] = UDim2.new(0, 106, 0, 34);
+LMG2L["nextButton"]["Text"] = [[HOLD TO NEXT CHEST]];
+LMG2L["nextButton"]["Position"] = UDim2.new(0, 34, 0, 74);
+LMG2L["nextButton"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
+
+LMG2L["prevButton"] = Instance.new("TextButton", LMG2L["Frame_2"]);
+LMG2L["prevButton"]["BorderSizePixel"] = 0;
+LMG2L["prevButton"]["TextSize"] = 9;
+LMG2L["prevButton"]["BackgroundColor3"] = Color3.fromRGB(70, 70, 120);
+LMG2L["prevButton"]["FontFace"] = Font.new([[rbxasset://fonts/families/Inconsolata.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+LMG2L["prevButton"]["Size"] = UDim2.new(0, 106, 0, 34);
+LMG2L["prevButton"]["Text"] = [[HOLD TO PREVIOUS CHEST]];
+LMG2L["prevButton"]["Position"] = UDim2.new(0, 34, 0, 124);
+LMG2L["prevButton"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
+
+LMG2L["UICorner_a"] = Instance.new("UICorner", LMG2L["prevButton"]);
+
+LMG2L["UICorner_b"] = Instance.new("UICorner", LMG2L["nextButton"]);
+
+LMG2L["chestLabel"] = Instance.new("TextLabel", LMG2L["Frame_2"]);
+LMG2L["chestLabel"]["BorderSizePixel"] = 0;
+LMG2L["chestLabel"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["chestLabel"]["Size"] = UDim2.new(0, 146, 0, 18);
+LMG2L["chestLabel"]["Text"] = [[1 - 31]];
+LMG2L["chestLabel"]["Position"] = UDim2.new(0, 12, 0, 36);
+LMG2L["chestLabel"]["BackgroundTransparency"] = 1
+LMG2L["chestLabel"]["TextColor3"] = Color3.fromRGB(255, 255, 150)
+LMG2L["chestLabel"]["FontFace"] = Font.new([[rbxasset://fonts/families/Inconsolata.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+LMG2L["chestLabel"]["TextSize"] = 16
+
+LMG2L["coordsLabel"] = Instance.new("TextLabel", LMG2L["Frame_2"])
+LMG2L["coordsLabel"]["BorderSizePixel"] = 0
+LMG2L["coordsLabel"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+LMG2L["coordsLabel"]["Size"] = UDim2.new(0, 160, 0, 30)
+LMG2L["coordsLabel"]["Text"] = ""
+LMG2L["coordsLabel"]["Position"] = UDim2.new(0, 6, 0, 20)
+LMG2L["coordsLabel"]["BackgroundTransparency"] = 1
+LMG2L["coordsLabel"]["TextColor3"] = Color3.fromRGB(220, 220, 255)
+LMG2L["coordsLabel"]["FontFace"] = Font.new([[rbxasset://fonts/families/Inconsolata.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+LMG2L["coordsLabel"]["TextSize"] = 12
+
+local function teleportToChest()
+    local targetPos = chestLocations[currentChestIndex]
+    pcall(function()
+        hrp.CFrame = CFrame.new(targetPos.X, targetPos.Y + 5, targetPos.Z)
+    end)
+    wait(0.1)
+    pcall(function()
+        hrp.CFrame = CFrame.new(targetPos)
+    end)
+end
+
+local function changeChestIndex(direction)
+    if direction == "next" then
+        currentChestIndex = currentChestIndex + 1
+        if currentChestIndex > #chestLocations then
+            currentChestIndex = 1
+        end
+    elseif direction == "prev" then
+        currentChestIndex = currentChestIndex - 1
+        if currentChestIndex < 1 then
+            currentChestIndex = #chestLocations
+        end
+    end
+    
+    local targetPos = chestLocations[currentChestIndex]
+    LMG2L["chestLabel"].Text = string.format("CHEST %d / 31", currentChestIndex)
+    
+    teleportToChest()
+    
+    return targetPos
+end
+
+LMG2L["nextButton"].MouseButton1Down:Connect(function()
+    changeChestIndex("next")
+end)
+
+LMG2L["prevButton"].MouseButton1Down:Connect(function()
+    changeChestIndex("prev")
+end)
+
+LMG2L["nextButton"].TouchTap:Connect(function()
+    changeChestIndex("next")
+end)
+
+LMG2L["prevButton"].TouchTap:Connect(function()
+    changeChestIndex("prev")
+end)
+
+RunService.RenderStepped:Connect(function()
+    local pos = hrp.Position
+    local targetPos = chestLocations[currentChestIndex]
+    local distance = (pos - targetPos).Magnitude
+    
+    LMG2L["coordsLabel"].Text = string.format(
+        "X:%d Y:%d Z:%d\nDist: %.0f",
+        math.floor(pos.X), math.floor(pos.Y), math.floor(pos.Z), distance
+    )
+    
+    if distance < 10 then
+        LMG2L["chestLabel"].TextColor3 = Color3.fromRGB(100, 255, 100)
+        LMG2L["nextButton"].BackgroundColor3 = Color3.fromRGB(50, 120, 50)
+        LMG2L["prevButton"].BackgroundColor3 = Color3.fromRGB(50, 120, 50)
+    else
+        LMG2L["chestLabel"].TextColor3 = Color3.fromRGB(255, 255, 150)
+        LMG2L["nextButton"].BackgroundColor3 = Color3.fromRGB(70, 70, 120)
+        LMG2L["prevButton"].BackgroundColor3 = Color3.fromRGB(70, 70, 120)
+    end
+end)
+
+LMG2L["Frame_2"].InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local startPos = input.Position
+        local guiStartPos = LMG2L["Frame_2"].Position
+        
+        local connection
+        connection = input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                connection:Disconnect()
+            else
+                local delta = input.Position - startPos
+                LMG2L["Frame_2"].Position = UDim2.new(
+                    guiStartPos.X.Scale, 
+                    guiStartPos.X.Offset + delta.X,
+                    guiStartPos.Y.Scale, 
+                    guiStartPos.Y.Offset + delta.Y
+                )
+            end
+        end)
+    end
+end)
+
+player.CharacterAdded:Connect(function(newChar)
+    char = newChar
+    hrp = newChar:WaitForChild("HumanoidRootPart")
+end)
+
+LMG2L["chestLabel"].Text = string.format("CHEST %d / 31", currentChestIndex)
+teleportToChest()
+
+print("Chest Teleporter loaded!")
