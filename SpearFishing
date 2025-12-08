@@ -3,6 +3,7 @@ local player = game:GetService("Players").LocalPlayer
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 LMG2L["ScreenGui_1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
 LMG2L["ScreenGui_1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
@@ -103,12 +104,70 @@ UIS.InputChanged:Connect(function(input)
     end
 end)
 
--- Function to prevent character bugging during teleport
+-- Function to get nearest fish with priority for bigger fish
+local function getNearestRoot()
+    local bestFish = nil
+    local bestScore = -math.huge
+
+    local char = player.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
+
+    local hrp = char.HumanoidRootPart
+
+    for _, sea in ipairs(Workspace.WorldSea:GetChildren()) do
+        for _, fish in ipairs(sea:GetChildren()) do
+            -- Check if it's a fish and has the proper structure
+            if fish:FindFirstChild("Model") and fish.Model:FindFirstChild("Root") then
+                local root = fish.Model.Root
+                local dist = (root.Position - hrp.Position).Magnitude
+                
+                -- Check if fish is in water (not dead/collected)
+                local fishState = fish:FindFirstChild("State")
+                if fishState and fishState.Value == "Dead" then
+                    continue
+                end
+                
+                -- Calculate a score based on distance and fish size
+                -- Bigger fish usually have different names or properties
+                local fishName = fish.Name:lower()
+                local sizeMultiplier = 1
+                
+                -- Prioritize bigger fish
+                if fishName:find("big") or fishName:find("large") or fishName:find("huge") then
+                    sizeMultiplier = 3
+                elseif fishName:find("medium") then
+                    sizeMultiplier = 2
+                end
+                
+                -- Also check for visual size
+                local modelSize = fish.Model:GetExtentsSize()
+                local volume = modelSize.X * modelSize.Y * modelSize.Z
+                if volume > 50 then  -- Big fish have larger volume
+                    sizeMultiplier = math.max(sizeMultiplier, 3)
+                end
+                
+                -- Score calculation: prioritize closer AND bigger fish
+                local score = (1000 - dist) * sizeMultiplier
+                
+                if score > bestScore then
+                    bestScore = score
+                    bestFish = root
+                end
+            end
+        end
+    end
+
+    return bestFish
+end
+
+-- Improved teleport function with better positioning
 local function safeTeleport(root)
+    if not root then return false end
+    
     local char = player.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then 
         isTweening = false
-        return nil 
+        return false 
     end
     
     local hrp = char.HumanoidRootPart
@@ -116,130 +175,165 @@ local function safeTeleport(root)
     
     if not humanoid then
         isTweening = false
-        return nil
+        return false
     end
     
     -- Save original humanoid state
     originalHumanoidState = {
         PlatformStand = humanoid.PlatformStand,
-        AutoRotate = humanoid.AutoRotate,
-        Jump = humanoid.Jump
+        AutoRotate = humanoid.AutoRotate
     }
     
     -- Prepare character for teleport
-    humanoid.PlatformStand = true
-    humanoid.AutoRotate = false
+    humanoid.PlatformStand = false  -- Changed to false for better spear mechanics
+    humanoid.AutoRotate = true
     
-    -- Calculate distance and tween time
-    local distance = (root.Position - hrp.Position).Magnitude
-    local tweenTime = math.min(distance / 60, 2) -- Cap at 2 seconds max
+    -- Calculate teleport position
+    -- Teleport to a position near the fish but not too close
+    local fishDirection = (root.Position - hrp.Position).Unit
+    local teleportDistance = 20  -- Distance from fish to teleport
+    local teleportPosition = root.Position - (fishDirection * teleportDistance)
+    teleportPosition = Vector3.new(teleportPosition.X, teleportPosition.Y + 2, teleportPosition.Z)  -- Slightly above
     
-    local tweenInfo = TweenInfo.new(
-        tweenTime,
-        Enum.EasingStyle.Linear
-    )
+    -- Use CFrame for proper orientation
+    local targetCFrame = CFrame.new(teleportPosition, root.Position)
     
-    -- Create and play tween
-    local tween = TweenService:Create(hrp, tweenInfo, {
-        CFrame = CFrame.new(root.Position.X, hrp.Position.Y, root.Position.Z)
-    })
+    -- Direct teleport instead of tween for better accuracy
+    hrp.CFrame = targetCFrame
     
-    currentTween = tween
-    tween:Play()
-    
-    -- Wait for tween to complete or be interrupted
-    local completed = tween.Completed:Wait()
+    -- Small delay for stabilization
+    task.wait(0.2)
     
     -- Restore humanoid state
     if originalHumanoidState then
         humanoid.PlatformStand = originalHumanoidState.PlatformStand
         humanoid.AutoRotate = originalHumanoidState.AutoRotate
-        task.wait(0.1) -- Small delay to stabilize
     end
     
     isTweening = false
-    currentTween = nil
-    
     return true
-end
-
-local function getNearestRoot()
-    local nearest
-    local minDistance = math.huge
-
-    local char = player.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
-
-    local hrp = char.HumanoidRootPart
-
-    for _, sea in ipairs(workspace.WorldSea:GetChildren()) do
-        for _, fish in ipairs(sea:GetChildren()) do
-            if fish:FindFirstChild("Model") and fish.Model:FindFirstChild("Root") then
-                local root = fish.Model.Root
-                local dist = (root.Position - hrp.Position).Magnitude
-
-                if dist < minDistance then
-                    minDistance = dist
-                    nearest = root
-                end
-            end
-        end
-    end
-
-    return nearest
 end
 
 local function findTool()
     local char = player.Character
     if not char then return nil end
 
+    -- Look for spear tools
     for _, item in ipairs(char:GetChildren()) do
-        if item:IsA("Tool") then
+        if item:IsA("Tool") and (item.Name:lower():find("spear") or item.Name:lower():find("harpoon")) then
             return item
+        end
+    end
+    
+    -- Also check backpack
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        for _, item in ipairs(backpack:GetChildren()) do
+            if item:IsA("Tool") and (item.Name:lower():find("spear") or item.Name:lower():find("harpoon")) then
+                -- Equip the tool
+                item.Parent = char
+                task.wait(0.1)
+                return item
+            end
         end
     end
 
     return nil
 end
 
+-- Improved auto-cast function
 local function autoCast(root)
-    if not root then return end
+    if not root then return false end
 
     local tool = findTool()
-    if not tool then return end
-
+    if not tool then 
+        warn("No spear tool found!")
+        return false
+    end
+    
+    -- Wait a bit for tool to be properly equipped
+    task.wait(0.1)
+    
+    -- Get camera for aiming
+    local camera = Workspace.CurrentCamera
+    
+    -- Calculate aim position (aim slightly ahead of fish for leading)
+    local fishVelocity = Vector3.new(0, 0, 0)
+    -- Try to get fish velocity if available
+    if root.Parent and root.Parent.Parent then
+        local fishModel = root.Parent
+        local fishVelocityPart = fishModel:FindFirstChild("Velocity") or fishModel:FindFirstChild("Root")
+        if fishVelocityPart then
+            fishVelocity = fishVelocityPart.Velocity or Vector3.new(0, 0, 0)
+        end
+    end
+    
+    -- Predict fish position based on velocity
+    local predictionTime = 0.3  -- Time to predict ahead
+    local predictedPosition = root.Position + (fishVelocity * predictionTime)
+    
+    -- Fire the spear
     local args = {
         [1] = "Fire",
         [2] = {
-            cameraOrigin = workspace.CurrentCamera.CFrame.Position,
+            cameraOrigin = camera.CFrame.Position,
             player = player,
             toolInstance = tool,
-            destination = root.Position,
-            isCharge = false
+            destination = predictedPosition,  -- Use predicted position
+            isCharge = true  -- Always use charged throw for bigger fish
         }
     }
 
-    game:GetService("ReplicatedStorage").Remotes.FireRE:FireServer(unpack(args))
+    local success = pcall(function()
+        game:GetService("ReplicatedStorage").Remotes.FireRE:FireServer(unpack(args))
+    end)
+    
+    if success then
+        print("Spear fired at fish!")
+    else
+        warn("Failed to fire spear!")
+    end
+    
+    return success
 end
 
--- Auto Farm Loop
+-- Auto Farm Loop with better timing
 task.spawn(function()
     while true do
         if autoFarm and not isTweening then
             local root = getNearestRoot()
             if root then
                 isTweening = true
-                local success = safeTeleport(root)
-                if success then
-                    task.wait(0.2)
-                    autoCast(root)
+                
+                -- Check if we have a spear equipped
+                local tool = findTool()
+                if not tool then
+                    warn("No spear equipped. Please equip a spear first!")
+                    isTweening = false
+                    task.wait(1)
+                    continue
                 end
-                task.wait(0.1) -- Small cooldown between actions
+                
+                -- Teleport to fish
+                local teleportSuccess = safeTeleport(root)
+                if teleportSuccess then
+                    -- Wait for stabilization and aim
+                    task.wait(0.3)
+                    
+                    -- Fire at fish
+                    autoCast(root)
+                    
+                    -- Wait before next action
+                    task.wait(1.5)  -- Increased wait time for spear recovery
+                else
+                    task.wait(0.5)
+                end
+                isTweening = false
             else
-                task.wait(0.5) -- Wait longer if no fish found
+                task.wait(1)  -- Wait longer if no fish found
             end
         end
-        task.wait(0.03)
+        task.wait(0.1)  -- Slightly longer loop interval
     end
 end)
 
@@ -249,6 +343,12 @@ LMG2L["TextButton_8"].MouseButton1Click:Connect(function()
     if autoFarm then
         LMG2L["TextButton_8"].Text = "AUTO FARM : ON"
         LMG2L["TextButton_8"].BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        
+        -- Check if player has spear equipped
+        local tool = findTool()
+        if not tool then
+            warn("WARNING: No spear detected! Auto farm may not work properly.")
+        end
     else
         -- Stop any ongoing tween
         if currentTween then
