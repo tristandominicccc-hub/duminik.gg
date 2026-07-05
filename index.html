@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>AnimeStream – Admin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    /* ---------- RESET & VARIABLES ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    :root {
+      --bg-primary: #0b0e14;
+      --bg-secondary: #131a22;
+      --bg-glass: rgba(19, 26, 34, 0.72);
+      --border-glass: rgba(255, 255, 255, 0.06);
+      --accent: #ff6b4a;
+      --accent-grad: linear-gradient(135deg, #ff6b4a, #ff2e00);
+      --text-primary: #eef2f5;
+      --text-muted: #8a9aaa;
+      --radius: 16px;
+      --shadow: 0 12px 48px rgba(0, 0, 0, 0.7);
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 16px 20px 100px 20px;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--accent);
+      border-radius: 10px;
+    }
+
+    .glass {
+      background: var(--bg-glass);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* ---------- NAVBAR ---------- */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 15px;
+      padding: 8px 0 20px 0;
+    }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: var(--accent-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .logo i {
+      -webkit-text-fill-color: var(--accent);
+    }
+    .logo:hover {
+      opacity: 0.85;
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .nav-actions i {
+      font-size: 1.3rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .nav-actions i:hover {
+      color: var(--accent);
+    }
+    .nav-actions .admin-icon {
+      color: #ffb347;
+    }
+    .nav-actions .admin-icon:hover {
+      color: #ff8c00;
+    }
+
+    /* ---------- VIEWS ---------- */
+    .view {
+      display: none;
+    }
+    .view.active {
+      display: block;
+    }
+
+    /* ---------- HOME ---------- */
+    .home-search {
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: center;
+    }
+    .home-search input {
+      width: 100%;
+      max-width: 500px;
+      padding: 12px 20px;
+      border-radius: 40px;
+      border: 1px solid #2a333d;
+      background: var(--bg-secondary);
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: 0.3s;
+    }
+    .home-search input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(255, 107, 74, 0.15);
+    }
+    .home-search input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .home-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 24px;
+    }
+
+    /* ---------- ANIME CARD ---------- */
+    .anime-card {
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      transition: 0.25s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      position: relative;
+    }
+    .anime-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+    }
+    .anime-card img {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      display: block;
+      background: #1a1f26;
+    }
+    .anime-card .card-body {
+      padding: 12px 14px 16px 14px;
+    }
+    .anime-card .card-body h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .anime-card .card-body p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .anime-card .play-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: 0.3s;
+      border-radius: var(--radius);
+    }
+    .anime-card:hover .play-overlay {
+      opacity: 1;
+    }
+    .anime-card .play-overlay i {
+      font-size: 3rem;
+      color: #fff;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+    }
+
+    /* ---------- DETAIL ---------- */
+    .detail-wrapper {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .detail-cover {
+      display: block;
+      width: 280px;
+      max-width: 80%;
+      margin: 0 auto 20px auto;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .detail-title {
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    .detail-genre {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 16px;
+    }
+    .detail-synopsis {
+      text-align: center;
+      color: var(--text-muted);
+      line-height: 1.7;
+      font-size: 1rem;
+      max-width: 700px;
+      margin: 0 auto 30px auto;
+    }
+    .detail-episodes {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .detail-ep-btn {
+      background: var(--bg-secondary);
+      border: 1px solid #2a333d;
+      padding: 14px 20px;
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .detail-ep-btn:hover {
+      background: #1e2935;
+      border-color: var(--accent);
+    }
+    .detail-ep-btn .ep-number {
+      font-weight: 600;
+    }
+    .detail-ep-btn .ep-title {
+      color: var(--text-muted);
+    }
+    .detail-ep-btn i {
+      color: var(--accent);
+      opacity: 0.6;
+    }
+    .detail-ep-btn:hover i {
+      opacity: 1;
+    }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .back-link:hover {
+      color: var(--accent);
+    }
+    .back-link i {
+      margin-right: 6px;
+    }
+
+    /* ---------- WATCH ---------- */
+    .watch-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .video-wrapper {
+      background: #000;
+      border: 1px solid #2a333d;
+      position: relative;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+    .video-wrapper video {
+      width: 100%;
+      height: auto;
+      display: block;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      object-fit: contain;
+    }
+    .video-info-bar {
+      background: var(--bg-secondary);
+      padding: 14px 18px;
+      border: 1px solid #2a333d;
+      border-top: none;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .video-info-bar .title {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+    .video-info-bar .meta-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .video-info-bar .meta-tags i {
+      color: var(--accent);
+      margin-right: 4px;
+    }
+
+    .watch-nav {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .watch-nav .back-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: 0.2s;
+    }
+    .watch-nav .back-btn:hover {
+      color: var(--accent);
+    }
+    .watch-nav .episode-picker {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .watch-nav .ep-pick-btn {
+      background: var(--bg-secondary);
+      border: 1px solid #2a333d;
+      color: var(--text-muted);
+      padding: 4px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: 0.2s;
+    }
+    .watch-nav .ep-pick-btn.active {
+      border-color: var(--accent);
+      color: #fff;
+      background: rgba(255, 107, 74, 0.15);
+    }
+    .watch-nav .ep-pick-btn:hover {
+      border-color: var(--accent);
+    }
+
+    .autoplay-overlay {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 12px 20px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: none;
+      align-items: center;
+      gap: 16px;
+      z-index: 10;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.9);
+      pointer-events: auto;
+    }
+    .autoplay-overlay.show {
+      display: flex;
+    }
+    .autoplay-overlay .info {
+      font-size: 0.9rem;
+    }
+    .autoplay-overlay .info strong {
+      color: var(--accent);
+    }
+    .autoplay-overlay .countdown {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      min-width: 28px;
+      text-align: center;
+    }
+    .autoplay-overlay .cancel-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: 0.2s;
+    }
+    .autoplay-overlay .cancel-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* ---------- ADMIN ---------- */
+    .admin-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .admin-header h2 {
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .admin-header button {
+      background: var(--accent-grad);
+      border: none;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .admin-header button:hover {
+      transform: scale(1.04);
+      box-shadow: 0 4px 16px rgba(255, 107, 74, 0.4);
+    }
+
+    .admin-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .admin-item {
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      border: 1px solid #2a333d;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .admin-item .info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+    }
+    .admin-item .info img {
+      width: 60px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #1a1f26;
+    }
+    .admin-item .info .title {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    .admin-item .info .meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .admin-item .actions {
+      display: flex;
+      gap: 8px;
+    }
+    .admin-item .actions button {
+      background: transparent;
+      border: 1px solid #2a333d;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.8rem;
+    }
+    .admin-item .actions button:hover {
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .admin-item .actions .delete-btn:hover {
+      border-color: #ff4444;
+      color: #ff4444;
+    }
+
+    /* Admin forms */
+    .admin-form {
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      padding: 24px;
+      border: 1px solid #2a333d;
+      margin-bottom: 30px;
+      display: none;
+    }
+    .admin-form.show {
+      display: block;
+    }
+    .admin-form h3 {
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+    .admin-form label {
+      display: block;
+      margin: 10px 0 4px 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .admin-form input,
+    .admin-form textarea {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg-primary);
+      border: 1px solid #2a333d;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: 0.3s;
+    }
+    .admin-form input:focus,
+    .admin-form textarea:focus {
+      border-color: var(--accent);
+    }
+    .admin-form textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    .admin-form .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .admin-form .form-actions button {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 30px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .admin-form .form-actions .save-btn {
+      background: var(--accent-grad);
+      color: #fff;
+    }
+    .admin-form .form-actions .save-btn:hover {
+      transform: scale(1.04);
+    }
+    .admin-form .form-actions .cancel-btn {
+      background: var(--bg-primary);
+      color: var(--text-muted);
+      border: 1px solid #2a333d;
+    }
+    .admin-form .form-actions .cancel-btn:hover {
+      border-color: #555;
+    }
+
+    /* Episode management inside admin */
+    .episode-list-admin {
+      margin-top: 16px;
+      border-top: 1px solid #2a333d;
+      padding-top: 16px;
+    }
+    .episode-list-admin .ep-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+    .episode-list-admin .ep-row input {
+      flex: 1;
+      min-width: 100px;
+      padding: 6px 10px;
+      background: var(--bg-primary);
+      border: 1px solid #2a333d;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 0.9rem;
+    }
+    .episode-list-admin .ep-row .ep-del {
+      background: transparent;
+      border: none;
+      color: #ff4444;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .episode-list-admin .ep-row .ep-del:hover {
+      color: #ff0000;
+    }
+    .episode-list-admin .add-ep-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .episode-list-admin .add-ep-row input {
+      flex: 1;
+      min-width: 120px;
+      padding: 6px 10px;
+      background: var(--bg-primary);
+      border: 1px solid #2a333d;
+      border-radius: 6px;
+      color: #fff;
+    }
+    .episode-list-admin .add-ep-row button {
+      background: var(--accent-grad);
+      border: none;
+      color: #fff;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* ---------- TOAST ---------- */
+    .toast {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      padding: 10px 22px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+      z-index: 9999;
+      font-weight: 500;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .toast i {
+      color: var(--accent);
+      margin-right: 8px;
+    }
+
+    .footer {
+      margin-top: 50px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      padding-top: 24px;
+      opacity: 0.6;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 600px) {
+      .detail-cover {
+        width: 200px;
+      }
+      .detail-title {
+        font-size: 1.5rem;
+      }
+      .home-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 16px;
+      }
+      .admin-item {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .admin-item .info {
+        flex-wrap: wrap;
+      }
+      .watch-nav .episode-picker {
+        gap: 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== TOAST ========== -->
+  <div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg">Saved</span></div>
+
+  <div class="container">
+
+    <!-- ========== NAVBAR ========== -->
+    <nav class="navbar">
+      <div class="logo" id="homeBtn"><i class="fas fa-play-circle"></i> AnimeStream</div>
+      <div class="nav-actions">
+        <i class="fas fa-search" id="searchIcon"></i>
+        <i class="fas fa-heart"></i>
+        <i class="fas fa-cog admin-icon" id="adminIcon" title="Admin"></i>
+        <i class="fas fa-user-circle"></i>
+      </div>
+    </nav>
+
+    <!-- ========== VIEW: HOME ========== -->
+    <div class="view active" id="homeView">
+      <div class="home-search">
+        <input type="text" id="searchInput" placeholder="🔍 Search anime by title..." />
+      </div>
+      <div class="home-grid" id="homeGrid">
+        <!-- Cards injected by JS -->
+      </div>
+    </div>
+
+    <!-- ========== VIEW: DETAIL ========== -->
+    <div class="view" id="detailView">
+      <div class="detail-wrapper">
+        <div class="back-link" id="detailBack"><i class="fas fa-arrow-left"></i> Back to Home</div>
+        <img id="detailCover" class="detail-cover" src="" alt="Cover" />
+        <h1 id="detailTitle" class="detail-title">Title</h1>
+        <div id="detailGenre" class="detail-genre">Genre</div>
+        <p id="detailSynopsis" class="detail-synopsis">Synopsis</p>
+        <div id="detailEpList" class="detail-episodes">
+          <!-- Episode buttons injected -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== VIEW: WATCH ========== -->
+    <div class="view" id="watchView">
+      <div class="watch-container">
+        <div class="watch-nav">
+          <button class="back-btn" id="watchBack"><i class="fas fa-arrow-left"></i> Back to Anime</button>
+          <div class="episode-picker" id="watchEpPicker">
+            <!-- small episode buttons injected -->
+          </div>
+        </div>
+
+        <div class="video-wrapper" id="videoWrapper">
+          <video id="videoPlayer" controls playsinline preload="metadata">
+            <source src="" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <div class="autoplay-overlay" id="autoplayOverlay">
+            <div class="info">▶ <strong>Next</strong> in <span class="countdown" id="countdownNum">5</span>s</div>
+            <button class="cancel-btn" id="cancelAutoplay">Cancel</button>
+          </div>
+        </div>
+
+        <div class="video-info-bar">
+          <span class="title" id="watchVideoTitle">Episode Title</span>
+          <div class="meta-tags">
+            <span><i class="fas fa-clock"></i> 24 min</span>
+            <span><i class="fas fa-eye"></i> 12k watching</span>
+            <span><i class="fas fa-star" style="color:#f5c518;"></i> 4.8</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== VIEW: ADMIN ========== -->
+    <div class="view" id="adminView">
+      <div class="admin-container">
+        <div class="admin-header">
+          <h2><i class="fas fa-cog"></i> Admin Panel</h2>
+          <button id="addAnimeBtn"><i class="fas fa-plus"></i> Add New Anime</button>
+        </div>
+
+        <!-- Form for adding/editing anime -->
+        <div class="admin-form" id="animeForm">
+          <h3 id="formTitle">Add New Anime</h3>
+          <label>Title</label>
+          <input type="text" id="animeTitle" placeholder="e.g. Solo Leveling" />
+          <label>Genre</label>
+          <input type="text" id="animeGenre" placeholder="e.g. Action, Fantasy" />
+          <label>Synopsis</label>
+          <textarea id="animeSynopsis" placeholder="Describe the anime..."></textarea>
+          <label>Cover Image URL</label>
+          <input type="text" id="animeImage" placeholder="https://example.com/cover.jpg" />
+
+          <!-- Episode management inside form -->
+          <div class="episode-list-admin" id="episodeListAdmin">
+            <label style="margin-top:8px;">Episodes</label>
+            <div id="episodeListContainer">
+              <!-- Rendered by JS -->
+            </div>
+            <div class="add-ep-row">
+              <input type="text" id="epTitleInput" placeholder="Episode title (e.g. The Awakening)" />
+              <input type="text" id="epVideoInput" placeholder="Video URL (optional)" />
+              <button id="addEpBtn"><i class="fas fa-plus"></i> Add</button>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="save-btn" id="saveAnimeBtn"><i class="fas fa-save"></i> Save</button>
+            <button class="cancel-btn" id="cancelAnimeBtn">Cancel</button>
+          </div>
+          <input type="hidden" id="editAnimeId" value="" />
+        </div>
+
+        <!-- List of all anime -->
+        <div id="adminListContainer" class="admin-list">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>AnimeStream © 2026 — All videos are hosted on third‑party services.</p>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      'use strict';
+
+      // ---------- CONFIG ----------
+      const ADMIN_PASSWORD = 'admin123';
+      const FALLBACK_VIDEO =
+        'https://www.dropbox.com/scl/fi/q13607lulpdp1fvu9gutn/e6071d182448f26a5649a8cdc6900752_720w.mp4?rlkey=8r49km4w1k16uvpihs4fnny6c&st=vyphue8v&raw=1';
+
+      // ---------- DATA LAYER ----------
+      function getDefaultAnime() {
+        return [{
+          id: 'iron-wok-jan',
+          title: 'Iron Wok Jan!',
+          genre: 'Action, Comedy, Cooking',
+          synopsis: 'Jan Akiyama, a young culinary prodigy with a fiery temper, battles rivals in high‑stakes cooking duels. 🔥🍜',
+          image: 'https://picsum.photos/seed/ironwok/600/900',
+          episodes: [
+            { id: 1, title: 'The Iron Wok', videoUrl: FALLBACK_VIDEO },
+            { id: 2, title: 'The Rival', videoUrl: '' },
+            { id: 3, title: 'The Secret Recipe', videoUrl: '' },
+            { id: 4, title: 'Showdown', videoUrl: '' },
+            { id: 5, title: 'The Final Battle', videoUrl: '' },
+            { id: 6, title: 'New Beginnings', videoUrl: '' }
+          ]
+        }, {
+          id: 'solo-leveling',
+          title: 'Solo Leveling',
+          genre: 'Action, Fantasy',
+          synopsis: 'Sung Jin‑Woo, the weakest hunter, gains the ability to level up infinitely – and becomes humanity\'s greatest hope. 💀⚔️',
+          image: 'https://picsum.photos/seed/sololeveling/600/900',
+          episodes: [
+            { id: 1, title: 'The Weakest Hunter', videoUrl: FALLBACK_VIDEO },
+            { id: 2, title: 'The Awakening', videoUrl: '' },
+            { id: 3, title: 'First Dungeon', videoUrl: '' },
+            { id: 4, title: 'The Double Dungeon', videoUrl: '' }
+          ]
+        }, {
+          id: 'dandadan',
+          title: 'Dandadan',
+          genre: 'Sci‑Fi, Comedy, Romance',
+          synopsis: 'Momo and Ken challenge each other’s beliefs in ghosts and aliens – and stumble into a bizarre supernatural conspiracy. 👻👽',
+          image: 'https://picsum.photos/seed/dandadan/600/900',
+          episodes: [
+            { id: 1, title: 'Turbo Granny', videoUrl: FALLBACK_VIDEO },
+            { id: 2, title: 'The Serpo', videoUrl: '' },
+            { id: 3, title: 'The First Battle', videoUrl: '' }
+          ]
+        }, {
+          id: 'jujutsu-kaisen',
+          title: 'Jujutsu Kaisen',
+          genre: 'Action, Dark Fantasy',
+          synopsis: 'Yuji Itadori becomes the vessel of Ryomen Sukuna and enters the dangerous world of jujutsu sorcerers. 👹🔮',
+          image: 'https://picsum.photos/seed/jujutsukaisen/600/900',
+          episodes: [
+            { id: 1, title: 'Ryomen Sukuna', videoUrl: FALLBACK_VIDEO },
+            { id: 2, title: 'For Myself', videoUrl: '' },
+            { id: 3, title: 'The Girl of Steel', videoUrl: '' },
+            { id: 4, title: 'Jujutsu High', videoUrl: '' }
+          ]
+        }];
+      }
+
+      function loadAnimeData() {
+        const stored = localStorage.getItem('animeData');
+        if (stored) {
+          try {
+            const data = JSON.parse(stored);
+            if (Array.isArray(data) && data.length) return data;
+          } catch (e) {}
+        }
+        // fallback to default and save
+        const def = getDefaultAnime();
+        localStorage.setItem('animeData', JSON.stringify(def));
+        return def;
+      }
+
+      function saveAnimeData(data) {
+        localStorage.setItem('animeData', JSON.stringify(data));
+      }
+
+      // ---------- STATE ----------
+      let animeData = loadAnimeData();
+      let currentAnimeId = null;
+      let currentEpisodeIndex = 0;
+      let autoplayTimer = null;
+      let autoplayCountdown = 5;
+      let isAdminLoggedIn = false;
+
+      // DOM refs (views)
+      const homeView = document.getElementById('homeView');
+      const detailView = document.getElementById('detailView');
+      const watchView = document.getElementById('watchView');
+      const adminView = document.getElementById('adminView');
+
+      const homeGrid = document.getElementById('homeGrid');
+      const searchInput = document.getElementById('searchInput');
+      const homeBtn = document.getElementById('homeBtn');
+      const searchIcon = document.getElementById('searchIcon');
+      const adminIcon = document.getElementById('adminIcon');
+
+      const detailCover = document.getElementById('detailCover');
+      const detailTitle = document.getElementById('detailTitle');
+      const detailGenre = document.getElementById('detailGenre');
+      const detailSynopsis = document.getElementById('detailSynopsis');
+      const detailEpList = document.getElementById('detailEpList');
+      const detailBack = document.getElementById('detailBack');
+
+      const video = document.getElementById('videoPlayer');
+      const watchVideoTitle = document.getElementById('watchVideoTitle');
+      const watchBack = document.getElementById('watchBack');
+      const watchEpPicker = document.getElementById('watchEpPicker');
+      const autoplayOverlay = document.getElementById('autoplayOverlay');
+      const countdownNum = document.getElementById('countdownNum');
+      const cancelBtn = document.getElementById('cancelAutoplay');
+
+      // Admin refs
+      const adminListContainer = document.getElementById('adminListContainer');
+      const animeForm = document.getElementById('animeForm');
+      const formTitle = document.getElementById('formTitle');
+      const animeTitle = document.getElementById('animeTitle');
+      const animeGenre = document.getElementById('animeGenre');
+      const animeSynopsis = document.getElementById('animeSynopsis');
+      const animeImage = document.getElementById('animeImage');
+      const editAnimeId = document.getElementById('editAnimeId');
+      const episodeListContainer = document.getElementById('episodeListContainer');
+      const epTitleInput = document.getElementById('epTitleInput');
+      const epVideoInput = document.getElementById('epVideoInput');
+      const addEpBtn = document.getElementById('addEpBtn');
+      const saveAnimeBtn = document.getElementById('saveAnimeBtn');
+      const cancelAnimeBtn = document.getElementById('cancelAnimeBtn');
+      const addAnimeBtn = document.getElementById('addAnimeBtn');
+
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      let toastTimeout = null;
+
+      // ---------- HELPERS ----------
+      function showToast(msg, icon = 'fa-check-circle') {
+        toastMsg.textContent = msg;
+        toast.querySelector('i').className = `fas ${icon}`;
+        toast.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => toast.classList.remove('show'), 2000);
+      }
+
+      function getAnime(id) {
+        return animeData.find(a => a.id === id);
+      }
+
+      function getCurrentAnime() {
+        return getAnime(currentAnimeId);
+      }
+
+      function generateId(title) {
+        return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      }
+
+      // ---------- VIEW SWITCHING ----------
+      function showView(viewId) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+      }
+
+      // ---------- HOME ----------
+      function renderHome(filter = '') {
+        homeGrid.innerHTML = '';
+        const filtered = animeData.filter(a =>
+          a.title.toLowerCase().includes(filter.toLowerCase())
+        );
+        if (!filtered.length) {
+          homeGrid.innerHTML =
+          `<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:40px;">No anime found.</p>`;
+          return;
+        }
+        filtered.forEach(anime => {
+          const card = document.createElement('div');
+          card.className = 'anime-card';
+          card.innerHTML = `
+            <img src="${anime.image}" alt="${anime.title}" loading="lazy" />
+            <div class="play-overlay"><i class="fas fa-play-circle"></i></div>
+            <div class="card-body">
+              <h4>${anime.title}</h4>
+              <p>${anime.genre}</p>
+            </div>
+          `;
+          card.addEventListener('click', () => goToDetail(anime.id));
+          homeGrid.appendChild(card);
+        });
+      }
+
+      function goHome() {
+        // Reload data from storage in case it was changed elsewhere
+        animeData = loadAnimeData();
+        showView('homeView');
+        renderHome(searchInput.value);
+        window.location.hash = '#home';
+        video.pause();
+        video.src = '';
+        hideAutoplay();
+      }
+
+      // ---------- DETAIL ----------
+      function goToDetail(animeId) {
+        const anime = getAnime(animeId);
+        // FIX: If anime doesn't exist, go home instead of showing a blank page
+        if (!anime) {
+          goHome();
+          return;
+        }
+        currentAnimeId = animeId;
+
+        detailCover.src = anime.image;
+        detailTitle.textContent = anime.title;
+        detailGenre.textContent = anime.genre;
+        detailSynopsis.textContent = anime.synopsis;
+
+        detailEpList.innerHTML = '';
+        if (anime.episodes && anime.episodes.length) {
+          anime.episodes.forEach((ep, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'detail-ep-btn';
+            btn.innerHTML = `
+              <span><span class="ep-number">EP ${ep.id}</span> – <span class="ep-title">${ep.title}</span></span>
+              <i class="fas fa-play-circle"></i>
+            `;
+            btn.addEventListener('click', () => goToWatch(animeId, i));
+            detailEpList.appendChild(btn);
+          });
+        } else {
+          detailEpList.innerHTML = '<p style="text-align:center;color:var(--text-muted);">No episodes yet.</p>';
+        }
+
+        showView('detailView');
+        window.location.hash = `#anime/${animeId}`;
+        hideAutoplay();
+        video.pause();
+      }
+
+      // ---------- WATCH ----------
+      function goToWatch(animeId, episodeIndex) {
+        const anime = getAnime(animeId);
+        // FIX: If anime doesn't exist, go home
+        if (!anime) {
+          goHome();
+          return;
+        }
+        if (!anime.episodes || episodeIndex >= anime.episodes.length) {
+          goHome();
+          return;
+        }
+        currentAnimeId = animeId;
+        currentEpisodeIndex = episodeIndex;
+
+        const ep = anime.episodes[episodeIndex];
+        const videoSrc = ep.videoUrl && ep.videoUrl.trim() ? ep.videoUrl.trim() : FALLBACK_VIDEO;
+
+        video.src = videoSrc;
+        video.load();
+        video.play().catch(() => {});
+
+        watchVideoTitle.textContent = `${anime.title} – EP ${ep.id} (${ep.title})`;
+
+        // Build episode picker
+        watchEpPicker.innerHTML = '';
+        anime.episodes.forEach((e, i) => {
+          const btn = document.createElement('button');
+          btn.className = 'ep-pick-btn';
+          if (i === episodeIndex) btn.classList.add('active');
+          btn.textContent = e.id;
+          btn.addEventListener('click', () => {
+            if (i !== episodeIndex) goToWatch(animeId, i);
+          });
+          watchEpPicker.appendChild(btn);
+        });
+
+        showView('watchView');
+        window.location.hash = `#watch/${animeId}/${episodeIndex}`;
+        hideAutoplay();
+      }
+
+      // ---------- AUTO-PLAY ----------
+      function showAutoplay() {
+        const anime = getCurrentAnime();
+        if (!anime || !anime.episodes) return;
+        if (currentEpisodeIndex >= anime.episodes.length - 1) return;
+
+        autoplayCountdown = 5;
+        countdownNum.textContent = autoplayCountdown;
+        autoplayOverlay.classList.add('show');
+
+        clearInterval(autoplayTimer);
+        autoplayTimer = setInterval(() => {
+          autoplayCountdown -= 1;
+          countdownNum.textContent = autoplayCountdown;
+          if (autoplayCountdown <= 0) {
+            clearInterval(autoplayTimer);
+            hideAutoplay();
+            goToWatch(currentAnimeId, currentEpisodeIndex + 1);
+          }
+        }, 1000);
+      }
+
+      function hideAutoplay() {
+        clearInterval(autoplayTimer);
+        autoplayOverlay.classList.remove('show');
+      }
+
+      // ---------- KEYBOARD SHORTCUTS (watch only) ----------
+      document.addEventListener('keydown', (e) => {
+        if (!watchView.classList.contains('active')) return;
+        const tag = e.target.tagName.toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'button') return;
+
+        switch (e.key.toLowerCase()) {
+          case ' ':
+            e.preventDefault();
+            if (video.paused) { video.play().catch(() => {}); showToast('▶ Play', 'fa-play'); } else { video.pause();
+              showToast('⏸ Pause', 'fa-pause'); }
+            break;
+          case 'arrowleft':
+            e.preventDefault();
+            video.currentTime = Math.max(0, video.currentTime - 10);
+            showToast('⏪ -10s', 'fa-backward');
+            break;
+          case 'arrowright':
+            e.preventDefault();
+            video.currentTime = Math.min(video.duration, video.currentTime + 10);
+            showToast('⏩ +10s', 'fa-forward');
+            break;
+          case 'f':
+            e.preventDefault();
+            document.fullscreenElement ? document.exitFullscreen().catch(() => {}) : document.body.requestFullscreen()
+              .catch(() => {});
+            showToast('⛶ Fullscreen', 'fa-expand');
+            break;
+        }
+      });
+
+      video.addEventListener('ended', showAutoplay);
+      cancelBtn.addEventListener('click', (e) => { e.stopPropagation();
+        hideAutoplay(); });
+
+      // ---------- NAVIGATION ----------
+      homeBtn.addEventListener('click', goHome);
+      searchIcon.addEventListener('click', () => searchInput.focus());
+      searchInput.addEventListener('input', (e) => {
+        if (homeView.classList.contains('active')) renderHome(e.target.value);
+      });
+
+      detailBack.addEventListener('click', goHome);
+      watchBack.addEventListener('click', () => {
+        if (currentAnimeId) goToDetail(currentAnimeId);
+        else goHome();
+      });
+
+      // ---------- ADMIN LOGIN ----------
+      function requireAdmin() {
+        if (isAdminLoggedIn) return true;
+        const pwd = prompt('Enter admin password:');
+        if (pwd === ADMIN_PASSWORD) {
+          isAdminLoggedIn = true;
+          return true;
+        } else {
+          alert('Incorrect password.');
+          return false;
+        }
+      }
+
+      adminIcon.addEventListener('click', () => {
+        if (requireAdmin()) {
+          showView('adminView');
+          window.location.hash = '#admin';
+          renderAdminList();
+        }
+      });
+
+      // ---------- ADMIN RENDER ----------
+      function renderAdminList() {
+        // Reload data to reflect latest changes
+        animeData = loadAnimeData();
+        adminListContainer.innerHTML = '';
+        animeData.forEach(anime => {
+          const item = document.createElement('div');
+          item.className = 'admin-item';
+          item.innerHTML = `
+            <div class="info">
+              <img src="${anime.image}" alt="${anime.title}" />
+              <div>
+                <div class="title">${anime.title}</div>
+                <div class="meta">${anime.genre} • ${anime.episodes ? anime.episodes.length : 0} episodes</div>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="edit-btn" data-id="${anime.id}"><i class="fas fa-edit"></i> Edit</button>
+              <button class="delete-btn" data-id="${anime.id}"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+          `;
+          adminListContainer.appendChild(item);
+        });
+
+        // Attach event listeners
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = btn.dataset.id;
+            openEditAnime(id);
+          });
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = btn.dataset.id;
+            if (confirm(`Delete "${getAnime(id).title}"? This cannot be undone.`)) {
+              animeData = animeData.filter(a => a.id !== id);
+              saveAnimeData(animeData);
+              renderAdminList();
+              // if we're currently viewing this anime, go home
+              if (currentAnimeId === id) goHome();
+              showToast('Anime deleted.');
+            }
+          });
+        });
+      }
+
+      // ---------- ADMIN FORM (Add/Edit) ----------
+      function openEditAnime(id) {
+        const anime = getAnime(id);
+        if (!anime) return;
+        editAnimeId.value = id;
+        formTitle.textContent = `Edit Anime: ${anime.title}`;
+        animeTitle.value = anime.title;
+        animeGenre.value = anime.genre;
+        animeSynopsis.value = anime.synopsis;
+        animeImage.value = anime.image;
+
+        // Render episode list
+        renderEpisodeList(anime.episodes || []);
+        animeForm.classList.add('show');
+        // Scroll to form
+        animeForm.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      function renderEpisodeList(episodes) {
+        episodeListContainer.innerHTML = '';
+        if (!episodes || !episodes.length) {
+          episodeListContainer.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">No episodes.</p>';
+          return;
+        }
+        episodes.forEach((ep, index) => {
+          const row = document.createElement('div');
+          row.className = 'ep-row';
+          row.innerHTML = `
+            <input type="text" class="ep-title-input" value="${ep.title}" placeholder="Episode title" data-index="${index}" />
+            <input type="text" class="ep-video-input" value="${ep.videoUrl || ''}" placeholder="Video URL" data-index="${index}" />
+            <button class="ep-del" data-index="${index}"><i class="fas fa-times"></i></button>
+          `;
+          episodeListContainer.appendChild(row);
+        });
+
+        // Delete episode
+        document.querySelectorAll('.ep-del').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(btn.dataset.index, 10);
+            const episodes = getEpisodesFromForm();
+            episodes.splice(idx, 1);
+            renderEpisodeList(episodes);
+          });
+        });
+      }
+
+      function getEpisodesFromForm() {
+        const rows = episodeListContainer.querySelectorAll('.ep-row');
+        const episodes = [];
+        rows.forEach(row => {
+          const titleInput = row.querySelector('.ep-title-input');
+          const videoInput = row.querySelector('.ep-video-input');
+          if (titleInput && titleInput.value.trim()) {
+            episodes.push({
+              id: episodes.length + 1,
+              title: titleInput.value.trim(),
+              videoUrl: videoInput ? videoInput.value.trim() : ''
+            });
+          }
+        });
+        episodes.forEach((ep, i) => ep.id = i + 1);
+        return episodes;
+      }
+
+      function resetForm() {
+        editAnimeId.value = '';
+        formTitle.textContent = 'Add New Anime';
+        animeTitle.value = '';
+        animeGenre.value = '';
+        animeSynopsis.value = '';
+        animeImage.value = '';
+        episodeListContainer.innerHTML = '';
+        animeForm.classList.remove('show');
+      }
+
+      // Add new anime button
+      addAnimeBtn.addEventListener('click', () => {
+        resetForm();
+        formTitle.textContent = 'Add New Anime';
+        animeForm.classList.add('show');
+        animeForm.scrollIntoView({ behavior: 'smooth' });
+      });
+
+      // Cancel button
+      cancelAnimeBtn.addEventListener('click', resetForm);
+
+      // Add episode button
+      addEpBtn.addEventListener('click', () => {
+        const title = epTitleInput.value.trim();
+        const videoUrl = epVideoInput.value.trim();
+        if (!title) {
+          showToast('Please enter an episode title.', 'fa-exclamation-circle');
+          return;
+        }
+        let episodes = getEpisodesFromForm();
+        episodes.push({
+          id: episodes.length + 1,
+          title: title,
+          videoUrl: videoUrl
+        });
+        renderEpisodeList(episodes);
+        epTitleInput.value = '';
+        epVideoInput.value = '';
+        showToast('Episode added.');
+      });
+
+      // Save anime (create or update)
+      saveAnimeBtn.addEventListener('click', () => {
+        const title = animeTitle.value.trim();
+        const genre = animeGenre.value.trim();
+        const synopsis = animeSynopsis.value.trim();
+        const image = animeImage.value.trim();
+        if (!title || !genre || !synopsis || !image) {
+          showToast('Please fill in all fields (title, genre, synopsis, image).', 'fa-exclamation-circle');
+          return;
+        }
+
+        const episodes = getEpisodesFromForm();
+        const id = editAnimeId.value || generateId(title);
+
+        const existing = getAnime(id);
+        const newAnime = {
+          id: id,
+          title: title,
+          genre: genre,
+          synopsis: synopsis,
+          image: image,
+          episodes: episodes
+        };
+
+        if (existing) {
+          const index = animeData.findIndex(a => a.id === id);
+          animeData[index] = newAnime;
+        } else {
+          if (animeData.some(a => a.id === id)) {
+            showToast('Anime with this title already exists. Please use a different title.', 'fa-exclamation-circle');
+            return;
+          }
+          animeData.push(newAnime);
+        }
+
+        saveAnimeData(animeData);
+        resetForm();
+        renderAdminList();
+        // If we're in detail or watch, refresh? We'll just go home.
+        if (detailView.classList.contains('active') || watchView.classList.contains('active')) {
+          goHome();
+        }
+        showToast('Anime saved successfully!');
+      });
+
+      // ---------- HASH ROUTING ----------
+      function handleHash() {
+        const hash = window.location.hash.slice(1) || 'home';
+        if (hash === 'home') {
+          if (!homeView.classList.contains('active')) goHome();
+          return;
+        }
+        if (hash === 'admin') {
+          if (requireAdmin()) {
+            showView('adminView');
+            renderAdminList();
+          } else {
+            goHome();
+          }
+          return;
+        }
+        if (hash.startsWith('anime/')) {
+          const id = hash.split('/')[1];
+          if (id && getAnime(id)) {
+            goToDetail(id);
+          } else {
+            goHome();
+          }
+          return;
+        }
+        if (hash.startsWith('watch/')) {
+          const parts = hash.split('/');
+          if (parts.length >= 3) {
+            const id = parts[1];
+            const epIndex = parseInt(parts[2], 10);
+            if (id && getAnime(id) && !isNaN(epIndex)) {
+              goToWatch(id, epIndex);
+              return;
+            }
+          }
+          goHome();
+          return;
+        }
+        goHome();
+      }
+
+      window.addEventListener('hashchange', handleHash);
+
+      // ---------- INIT ----------
+      function init() {
+        if (window.location.hash) {
+          handleHash();
+        } else {
+          goHome();
+        }
+        console.log('🍜 AnimeStream loaded. Admin password: admin123');
+      }
+
+      init();
+
+    })();
+  </script>
+</body>
+</html>
